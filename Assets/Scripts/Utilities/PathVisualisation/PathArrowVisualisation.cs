@@ -14,7 +14,7 @@ public class PathArrowVisualisation : MonoBehaviour {
     private float moveOnDistance;
     [SerializeField] private Renderer arrowRenderer;
     [SerializeField] private Color baseColor = Color.cyan;
-    [SerializeField] private float emissionIntensity = 2f;
+    [SerializeField] private float emissionIntensity = 4f;
     [SerializeField] private float pulseSpeed = 2f;
 
     private Material arrowMaterial;
@@ -40,7 +40,7 @@ public class PathArrowVisualisation : MonoBehaviour {
         SelectNextNavigationPoint();
         AddArrowOffset();
 
-        float hover = Mathf.Sin(Time.time * 2f) * 0.05f;
+        float hover = Mathf.Sin(Time.time * 1f) * 0.05f;
         arrow.transform.position = new Vector3(arrow.transform.position.x, navigationYOffset.value + hover, arrow.transform.position.z);
 
 
@@ -55,7 +55,7 @@ public class PathArrowVisualisation : MonoBehaviour {
     }
 
     private void AddOffsetToPath() {
-        pathOffset = new Vector3[path.corners.Length];
+            pathOffset = new Vector3[path.corners.Length];
         for (int i = 0; i < path.corners.Length; i++) {
             pathOffset[i] = new Vector3(path.corners[i].x, transform.position.y, path.corners[i].z);
         }
