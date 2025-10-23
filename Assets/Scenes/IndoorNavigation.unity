@@ -967,7 +967,6 @@ Transform:
   m_LocalPosition: {x: 0.46, y: 0, z: 8.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-<<<<<<< HEAD
   m_Children:
   - {fileID: 1915854336}
   - {fileID: 706146032}
@@ -985,9 +984,6 @@ Transform:
   - {fileID: 725482873}
   - {fileID: 295803030}
   - {fileID: 1424206685}
-=======
-  m_Children: []
->>>>>>> parent of d456ccc (Update IndoorNavigation.unity)
   m_Father: {fileID: 1485711246}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &72822288
