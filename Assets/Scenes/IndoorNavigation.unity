@@ -24093,9 +24093,12 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1992868469}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 --- !u!1 &1995821403
 GameObject:
   m_ObjectHideFlags: 0
@@ -24144,9 +24147,12 @@ MonoBehaviour:
   m_Center: {x: -0.011814117, y: 1, z: -0.011874437}
   m_Area: 1
   m_AffectedAgents: ffffffff
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> parent of 80f29c9 (Update IndoorNavigation.unity)
+=======
+>>>>>>> Stashed changes
 --- !u!1 &2032443684
 GameObject:
   m_ObjectHideFlags: 0
