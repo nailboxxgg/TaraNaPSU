@@ -1854,7 +1854,7 @@ GameObject:
   - component: {fileID: 108732146}
   - component: {fileID: 108732145}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (5)
+  m_Name: TargetCube(Main Building First Floor) (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3101,7 +3101,7 @@ GameObject:
   - component: {fileID: 212604267}
   - component: {fileID: 212604266}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (3)
+  m_Name: TargetCube(Main Building First Floor) (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4709,7 +4709,7 @@ GameObject:
   - component: {fileID: 337131186}
   - component: {fileID: 337131185}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (1)
+  m_Name: TargetCube(Main Building First Floor) (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6260,7 +6260,7 @@ GameObject:
   - component: {fileID: 434895206}
   - component: {fileID: 434895205}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (6)
+  m_Name: TargetCube(Main Building First Floor) (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12427,7 +12427,7 @@ GameObject:
   - component: {fileID: 919944029}
   - component: {fileID: 919944028}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (9)
+  m_Name: TargetCube(Main Building First Floor) (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16901,7 +16901,7 @@ GameObject:
   - component: {fileID: 1254802818}
   - component: {fileID: 1254802817}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (2)
+  m_Name: TargetCube(Main Building First Floor) (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17891,7 +17891,7 @@ GameObject:
   - component: {fileID: 1324793077}
   - component: {fileID: 1324793076}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (8)
+  m_Name: TargetCube(Main Building First Floor) (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21576,7 +21576,7 @@ GameObject:
   - component: {fileID: 1625483540}
   - component: {fileID: 1625483539}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor)
+  m_Name: TargetCube(Main Building First Floor)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22659,7 +22659,7 @@ GameObject:
   - component: {fileID: 1721953732}
   - component: {fileID: 1721953731}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (7)
+  m_Name: TargetCube(Main Building First Floor) (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26670,7 +26670,7 @@ GameObject:
   - component: {fileID: 2017525451}
   - component: {fileID: 2017525450}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (10)
+  m_Name: TargetCube(Main Building First Floor) (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27532,7 +27532,7 @@ GameObject:
   - component: {fileID: 2106668033}
   - component: {fileID: 2106668032}
   m_Layer: 0
-  m_Name: TargetCube(Main Building Second Floor) (4)
+  m_Name: TargetCube(Main Building First Floor) (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
