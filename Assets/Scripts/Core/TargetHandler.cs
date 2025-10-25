@@ -39,7 +39,7 @@ public class TargetHandler : MonoBehaviour {
 
         try {
             TargetWrapper wrapper = JsonUtility.FromJson<TargetWrapper>(targetDataFile.text);
-            allTargets = wrapper.TargetList;
+            allTargets = new List<Target>(wrapper.TargetList);
             Debug.Log($"Loaded {allTargets.Count} targets from JSON");
         } catch (System.Exception e) {
             Debug.LogError($"Failed to load targets: {e.Message}");

@@ -94,15 +94,15 @@ public class QrCodeRecenter : MonoBehaviour {
     }
 
     private void SetQrCodeRecenterTarget(string targetText) {
-        TargetFacade currentTarget = targetHandler.GetCurrentTargetByTargetText(targetText);
+        Target currentTarget = targetHandler.GetTargetByName(targetText);
         if (currentTarget != null) {
-            // Reset position and rotation of ARSession
-            session.Reset();
+    session.Reset();
 
-            // Add offset for recentering
-            sessionOrigin.transform.position = currentTarget.transform.position;
-            sessionOrigin.transform.rotation = currentTarget.transform.rotation;
-        }
+    // Apply stored transform data from Target
+        sessionOrigin.transform.position = currentTarget.Position;
+        sessionOrigin.transform.rotation = Quaternion.Euler(currentTarget.Rotation);
+    }
+
     }
 
     public void ChangeActiveFloor(string floorEntrance) {
