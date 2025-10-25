@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.IO;
+using System.Drawing.Drawing2D;
 
 /// <summary>
 /// Enhanced 3D arrow visualization for navigation paths
@@ -310,7 +312,7 @@ public class ArrowPathVisualizer : MonoBehaviour {
         if (!enabled) {
             ClearArrows();
         }
-        enabled = enabled;
+        this.enabled = enabled;
     }
 
     private void OnDestroy() {
@@ -322,11 +324,13 @@ public class ArrowPathVisualizer : MonoBehaviour {
     }
 
     // Debug visualization
-    private void OnDrawGizmos() {
+    private void OnDrawGizmos()
+    {
         if (!isVisualizingPath) return;
 
         Gizmos.color = Color.yellow;
-        foreach (Vector3 pos in arrowPositions) {
+        foreach (Vector3 pos in arrowPositions)
+        {
             Gizmos.DrawWireSphere(pos, 0.1f);
         }
     }
