@@ -109,8 +109,26 @@ public class QrCodeRecenter : MonoBehaviour {
         SetQrCodeRecenterTarget(floorEntrance);
     }
 
-    public void ToggleScanning() {
+    public void ToggleScanning()
+    {
         scanningEnabled = !scanningEnabled;
         qrCodeScanningPanel.SetActive(scanningEnabled);
     }
+    
+    public NavigationController navigationController;
+
+void OnQRCodeDetected(string qrData) {
+    int floor = ParseFloorFromQR(qrData);
+    if (floor >= 0 && floor <= 5) {
+        navigationController.ChangeFloor(floor);
+    }
+}
+
+int ParseFloorFromQR(string qrData) {
+    if (qrData.StartsWith("FLOOR:")) {
+        string num = qrData.Replace("FLOOR:", "");
+        if (int.TryParse(num, out int f)) return f;
+    }
+    return -1;
+}
 }

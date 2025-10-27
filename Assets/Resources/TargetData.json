@@ -1,40 +1,40 @@
 {
-	"TargetList": [
+	"TargetList": [		
 		{
-			"Name": "Office of the Campus Executive Director",
+			"Name": "B1-Office of the CED",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
+				"x": -8.27,
+				"y": -0.5,
+				"z": 1
 			},
 			"Rotation": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
+				"x": -90,
+				"y":  90,
+				"z":  0
 			}
 		},
 		{
-			"Name": "B1-Room102",
+			"Name": "B1-Cashier",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
+				"x": -4.8,
+				"y": -0.5,
+				"z": 0.9
 			},
 			"Rotation": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
+				"x": -90,
+				"y":  90,
+				"z":  0
 			}
 		},
 		{
-			"Name": "B1-Room201",
-			"FloorNumber": 1,
+			"Name": "B1-Registrar's Office",
+			"FloorNumber": 0,
 			"Position": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
+				"x": -4.30,
+				"y": -0.5,
+				"z": -1.8
 			},
 			"Rotation": {
 				"x": 0.0,
@@ -42,50 +42,38 @@
 				"z": 0.0
 			}
 		},
-		{
-			"Name": "B1-Room202",
-			"FloorNumber": 1,
+				{
+			"Name": "B1-Comfort Room",
+			"FloorNumber": 0,
 			"Position": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
+				"x": -17.53,
+				"y": -0.5,
+				"z": 1.5
 			},
 			"Rotation": {
-				"x": 0.0,
+				"x": -90,
 				"y": 0.0,
 				"z": 0.0
 			}
 		},
-		{
-			"Name": "B2-Room101",
-			"FloorNumber": 2,
+						{
+			"Name": "B1-Quality Assurance Office",
+			"FloorNumber": 0,
 			"Position": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
+				"x": -8.761,
+				"y": -0.5,
+				"z": -4.79
 			},
 			"Rotation": {
-				"x": 0.0,
+				"x": -90,
 				"y": 0.0,
 				"z": 0.0
 			}
 		},
+
+
 		{
-			"Name": "B2-Room102",
-			"FloorNumber": 2,
-			"Position": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
-			},
-			"Rotation": {
-				"x": 0.0,
-				"y": 0.0,
-				"z": 0.0
-			}
-		},
-		{
-			"Name": "B2-Room201",
+			"Name": "B2-NB1",
 			"FloorNumber": 3,
 			"Position": {
 				"x": 0.0,
@@ -99,7 +87,7 @@
 			}
 		},
 		{
-			"Name": "B2-Room202",
+			"Name": "B2-NB2",
 			"FloorNumber": 3,
 			"Position": {
 				"x": 0.0,
@@ -112,6 +100,147 @@
 				"z": 0.0
 			}
 		},
+				{
+			"Name": "B2-NB3",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-NB4",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-NB5",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-NB6",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-NB7",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-NB8",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-NB9",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-Clinic",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-Comfort Room",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+				{
+			"Name": "B2-Vacant Room",
+			"FloorNumber": 3,
+			"Position": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			},
+			"Rotation": {
+				"x": 0.0,
+				"y": 0.0,
+				"z": 0.0
+			}
+		},
+		
 		{
 			"Name": "B3-Room101",
 			"FloorNumber": 4,
@@ -126,6 +255,8 @@
 				"z": 0.0
 			}
 		},
+
+
 		{
 			"Name": "B3-Room102",
 			"FloorNumber": 4,
