@@ -46,6 +46,13 @@ public class NavigationStatusController : MonoBehaviour
     // ---------------------------------------------------------
     public void OnArrived()
     {
-        StatusText.text = "Arrived!";
+        if (StatusText != null)
+        {
+            StatusText.text = "Status: Arrived!";
+        }
+        else
+        {
+            Debug.LogError("❌ StatusText is not assigned in NavigationStatusController!");
+        }
     }
 }
