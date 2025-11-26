@@ -1,114 +1,153 @@
 {
-  "Anchors": [
+  "anchors": [
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B1-Entrance-North",
       "BuildingId": "B1",
       "Floor": 0,
-      "Position": { "x": -6.5, "y": -1, "z": 4.5 },
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": -6.5, "y": -1.0, "z": 4.5 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance A - North"
     },
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B1-Entrance-West",
       "BuildingId": "B1",
       "Floor": 0,
-      "Position": { "x": -11, "y": -1, "z": -2.5},
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": -11.0, "y": -1.0, "z": -2.5 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance B - West"
     },
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B1-Entrance-East",
       "BuildingId": "B1",
       "Floor": 0,
-      "Position": { "x": 8.5,"y": -1, "z": 2 },
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": 8.5, "y": -1.0, "z": 2.0 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance C - East"
     },
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B1-Entrance-South",
       "BuildingId": "B1",
       "Floor": 0,
-      "Position": { "x": 4.5, "y": -1, "z": -5.5 },
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": 4.5, "y": -1.0, "z": -5.5 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance D - South"
     },
 
     {
-      "Type":"Stairs",
-      "AnchorId": "B1-Stair1-Bottom",
-      "BuildingId": "B1",
-      "Floor": 0,
-      "Position": { "x": 9, "y": -1, "z": -2.35 },
-      "Rotation": { "x": 0, "y": 0, "z": 0 },
-      "Meta": "Stairway 1 (Ground)"
+    "Type": "stair",
+    "AnchorId": "B1-Stair1-Down",
+    "BuildingId": "B1",
+    "Floor": 0,
+    "Position": { "x": 9, "y": -1, "z": -2.35 },
+    "Rotation": { "x": 0, "y": 0, "z": 0 },
+    "Meta": "Stairway 1 (Ground)"
     },
     {
-      "Type":"Stairs",
-      "AnchorId": "B1-Stair1-Top",
+      "Type": "stair",
+      "AnchorId": "B1-Stair1-Up",
       "BuildingId": "B1",
       "Floor": 1,
       "Position": { "x": 9, "y": -1, "z": -2.35 },
       "Rotation": { "x": 0, "y": 0, "z": 0 },
       "Meta": "Stairway 1 (First Floor)"
     },
+
     {
-      "Type":"Stairs",
-      "AnchorId": "B1-Stair2-Bottom",
-      "BuildingId": "B1",
-      "Floor": 0,
-      "Position": { "x": -3, "y": -1, "z": 4 },
-      "Rotation": { "x": 0, "y": 0, "z": 0 },
-      "Meta": "Stairway 2 (Ground)"
+    "Type": "stair",
+    "AnchorId": "B1-Stair2-Down",
+    "BuildingId": "B1",
+    "Floor": 0,
+    "Position": { "x": -3.0, "y": -1.0, "z": 4.0 },
+    "Rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+    "Meta": "Stairway 2 (Ground)"
     },
     {
-      "Type":"Stairs",
-      "AnchorId": "B1-Stair2-Top",
+      "Type": "stair",
+      "AnchorId": "B1-Stair2-Up",
       "BuildingId": "B1",
       "Floor": 1,
-      "Position": { "x": -3, "y": -1 , "z": 4 },
-      "Rotation": { "x": 0, "y": 0, "z": 0 },
+      "Position": { "x": -3.0, "y": -1.0, "z": 4.0 },
+      "Rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
       "Meta": "Stairway 2 (First Floor)"
     },
 
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B2-Entrance-North",
       "BuildingId": "B2",
       "Floor": 0,
-      "Position": { "x": -6.5, "y": -1, "z": 4.5 },
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": -6.5, "y": -1.0, "z": 4.5 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance A - North"
     },
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B2-Entrance-West",
       "BuildingId": "B2",
       "Floor": 0,
-      "Position": { "x": -11, "y": -1, "z": -2.5},
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": -11.0, "y": -1.0, "z": -2.5 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance B - West"
     },
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B2-Entrance-East",
       "BuildingId": "B2",
       "Floor": 0,
-      "Position": { "x": 8.5,"y": -1, "z": 2 },
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": 8.5, "y": -1.0, "z": 2.0 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance C - East"
     },
     {
-      "Type":"Entrance",
+      "Type": "Entrance",
       "AnchorId": "B2-Entrance-South",
       "BuildingId": "B2",
       "Floor": 0,
-      "Position": { "x": 4.5, "y": -1, "z": -5.5 },
-      "Rotation": { "x": 0, "y": 180, "z": 0 },
+      "Position": { "x": 4.5, "y": -1.0, "z": -5.5 },
+      "Rotation": { "x": 0.0, "y": 180.0, "z": 0.0 },
       "Meta": "Entrance D - South"
+    },
+
+    {
+    "Type": "stair",
+    "AnchorId": "B2-Stair1-Down",
+    "BuildingId": "B1",
+    "Floor": 0,
+    "Position": { "x": 9, "y": -1, "z": -2.22},
+    "Rotation": { "x": 0, "y": 0, "z": 0 },
+    "Meta": "Stairway 1 (Ground)"
+    },
+    {
+      "Type": "stair",
+      "AnchorId": "B2-Stair1-Up",
+      "BuildingId": "B1",
+      "Floor": 1,
+      "Position": { "x": 9, "y": -1, "z": -2.22},
+      "Rotation": { "x": 0, "y": 0, "z": 0 },
+      "Meta": "Stairway 1 (First Floor)"
+    },
+
+    {
+    "Type": "stair",
+    "AnchorId": "B2-Stair2-Down",
+    "BuildingId": "B1",
+    "Floor": 0,
+    "Position": { "x": -3, "y": -1, "z": -4},
+    "Rotation": { "x": 0, "y": 0, "z": 0 },
+    "Meta": "Stairway 2 (Ground)"
+    },
+    {
+      "Type": "stair",
+      "AnchorId": "B2-Stair2-Up",
+      "BuildingId": "B1",
+      "Floor": 1,
+      "Position": { "x": -3, "y": -1, "z": -4},
+      "Rotation": { "x": 0, "y": 0, "z": 0 },
+      "Meta": "Stairway 2 (First Floor)"
     }
   ]
 }

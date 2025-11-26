@@ -121,4 +121,17 @@ public class SearchBarQR : MonoBehaviour
             yield return null;
         }
     }
+
+    public void ClearSelection()
+    {
+        // Clear the input field text
+        searchInputField.text = "";
+
+        // Clear any active suggestions
+        ClearSuggestions();
+        suggestionPanel.gameObject.SetActive(false);
+
+        // Remove focus from input field
+        searchInputField.DeactivateInputField();
+    }
 }

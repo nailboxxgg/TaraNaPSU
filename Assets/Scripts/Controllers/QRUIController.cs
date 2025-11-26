@@ -36,4 +36,17 @@ public class QRUIController : MonoBehaviour
 
         AppFlowController.Instance.OnQRCodeScanned(result);
     }
+
+    public void ResetScannerUI()
+    {
+        // Ensure scanner is stopped
+        if (scanner != null)
+        {
+            scanner.StopScanner();
+        }
+
+        // Reset UI to initial state
+        titleText.text = "Scan QR Code";
+        subtitleText.text = "Position yourself at a QR anchor";
+    }
 }
