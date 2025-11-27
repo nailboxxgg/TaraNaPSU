@@ -19,6 +19,7 @@ public class NavigationController : MonoBehaviour
     public float arriveDistance = 1.0f;
 
     private NavMeshPath navPath;
+    private bool hasArrived = false;
 
     void Awake()
     {
@@ -36,6 +37,9 @@ public class NavigationController : MonoBehaviour
     {
         if (target == null || agent == null) return;
 
+        // Don't update if already arrived
+        if (hasArrived) return;
+
         // Update NavMesh path
         NavMesh.CalculatePath(agent.transform.position, target.position, NavMesh.AllAreas, navPath);
         DrawPath();
@@ -43,9 +47,12 @@ public class NavigationController : MonoBehaviour
         // Move agent toward destination
         agent.SetDestination(target.position);
 
-        // Check arrival
-        if (!agent.pathPending && agent.remainingDistance <= arriveDistance)
+        // Check arrival - only call once
+        if (!agent.pathPending && agent.remainingDistance <= arriveDistance && !hasArrived)
+        {
             OnArrived();
+            hasArrived = true;
+        }
     }
 
     private void DrawPath()
@@ -115,8 +122,23 @@ public void BeginNavigation(AnchorManager.AnchorData startAnchor, string targetN
     {
         if (agent != null)
         {
-            // warp places the agent instantly at start position (useful for AR/offline)
-            agent.Warp(startAnchor.Position.ToVector3());
+            Vector3 anchorPos = startAnchor.Position.ToVector3();
+
+            // Adjust anchor Y position to match NavMesh level (Y=0)
+            Vector3 adjustedAnchorPos = new Vector3(anchorPos.x, 0f, anchorPos.z);
+
+            // Try to find a valid NavMesh position near the adjusted anchor position
+            if (NavMesh.SamplePosition(adjustedAnchorPos, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
+            {
+                // Successfully found a valid NavMesh position, warp there
+                agent.Warp(hit.position);
+                Debug.Log($"📍 Agent warped to valid NavMesh position near anchor {startAnchor.AnchorId}: {hit.position}");
+            }
+            else
+            {
+                // No valid NavMesh found near anchor, try agent's current position
+                Debug.LogWarning($"⚠️ No valid NavMesh found within 5m of adjusted anchor {adjustedAnchorPos}. Starting from current position.");
+            }
         }
         else
         {
@@ -174,6 +196,9 @@ public void BeginNavigation(AnchorManager.AnchorData startAnchor, string targetN
 
         // Reset navPath
         navPath = new NavMeshPath();
+
+        // Reset arrival state
+        hasArrived = false;
 
         Debug.Log("🛑 Navigation terminated");
     }
