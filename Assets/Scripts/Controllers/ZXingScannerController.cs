@@ -42,7 +42,7 @@ public class ZXingScannerController : MonoBehaviour
             previewRect.rotation = Quaternion.Euler(0, 0, -90);
         #else
             // For editor and other platforms, use the automatic rotation
-            previewRect.rotation = Quaternion.Euler(0, 0, camTexture.videoRotationAngle);
+            previewRect.rotation = Quaternion.Euler(0, 0, 0);
         #endif
 
         // Apply vertical mirroring if needed

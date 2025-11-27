@@ -4,9 +4,9 @@
 			"Name": "B1-Quality Assurance Office",
 			"FloorNumber": 0,
 			"Position": {
-				"x": -0.1750872,
+				"x": -8.7,
 				"y": -0.5,
-				"z": -0.09897857
+				"z": -5.5
 			},
 			"Rotation": {
 				"x": -90,
@@ -18,9 +18,9 @@
 			"Name": "B1-Extension Services",
 			"FloorNumber": 0,
 			"Position": {
-				"x": -0.2459496,
+				"x": -12.26,
 				"y": -0.5,
-				"z": -0.09897858
+				"z": -5.5
 			},
 			"Rotation": {
 				"x": -90,
@@ -32,9 +32,9 @@
 			"Name": "B1-Office 3",
 			"FloorNumber": 0,
 			"Position": {
-				"x": -4.7,
+				"x": -15.7,
 				"y": -0.5,
-				"z": -2.85
+				"z": -5.5
 			},
 			"Rotation": {
 				"x": -90,
@@ -46,9 +46,9 @@
 			"Name": "B1-Administrative Supply Office",
 			"FloorNumber": 0,
 			"Position": {
-				"x": -8.2,
+				"x": -19.5,
 				"y": -0.5,
-				"z": -2.85
+				"z": -5.5
 			},
 			"Rotation": {
 				"x": -90,
@@ -60,9 +60,9 @@
 			"Name": "B1-Registrar's Office",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 6.75,
+				"x": -4.2,
 				"y": -0.5,
-				"z": 0
+				"z": -2.75
 			},
 			"Rotation": {
 				"x": -90,
@@ -74,9 +74,9 @@
 			"Name": "B1-Office of the CED",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 2.75,
+				"x": -8,
 				"y": -0.5,
-				"z": 2.8
+				"z": -0.05
 			},
 			"Rotation": {
 				"x": -90,
@@ -88,9 +88,9 @@
 			"Name": "B1-Human Resource Management",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 8,
+				"x": -3,
 				"y": -0.5,
-				"z": -3.5
+				"z": -6
 			},
 			"Rotation": {
 				"x": -90,
@@ -102,9 +102,9 @@
 			"Name": "B1-Office 1",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 7.5,
+				"x": -3.5,
 				"y": -0.5,
-				"z": -4
+				"z": -6.6
 			},
 			"Rotation": {
 				"x": -90,
@@ -116,9 +116,9 @@
 			"Name": "B1-Office of the Accountant",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 9.5,
+				"x": -1.5,
 				"y": -0.5,
-				"z": 2.8
+				"z": -0.05
 			},
 			"Rotation": {
 				"x": -90,
@@ -130,9 +130,9 @@
 			"Name": "B1-Cashier",
 			"FloorNumber": 0,
 			"Position": {
-				"x": 6.25,
+				"x": -4.75,
 				"y": -0.5,
-				"z": 2.8
+				"z": -0.05
 			},
 			"Rotation": {
 				"x": -90,
@@ -144,9 +144,9 @@
 			"Name": "B1-Office",
 			"FloorNumber": 0,
 			"Position": {
-				"x": -1,
+				"x": -12,
 				"y": -0.5,
-				"z": 2.8
+				"z": -0.05
 			},
 			"Rotation": {
 				"x": -90,
@@ -158,9 +158,9 @@
 			"Name": "B1-Comfort Room 1",
 			"FloorNumber": 0,
 			"Position": {
-				"x": -6.5,
+				"x": -17.5,
 				"y": -0.5,
-				"z": 3.5
+				"z": 0.5
 			},
 			"Rotation": {
 				"x": -90,
@@ -172,9 +172,9 @@
 			"Name": "B1-RM 103",
 			"FloorNumber": 0,
 			"Position": {
-				"x": -6.2,
+				"x": -17.3,
 				"y": -0.5,
-				"z": 0.5
+				"z": -2.5
 			},
 			"Rotation": {
 				"x": -90,
@@ -187,9 +187,9 @@
 			"Name": "B1-ICT-MO",
 			"FloorNumber": 1,
 			"Position": {
-				"x": 2.25,
+				"x": 13.75,
 				"y": -0.5,
-				"z": -2.8
+				"z": -5.7
 			},
 			"Rotation": {
 				"x": 0,
@@ -201,9 +201,9 @@
 			"Name": "B1-CMT Office",
 			"FloorNumber": 1,
 			"Position": {
-				"x": -1.25,
+				"x": 10.25,
 				"y": -0.5,
-				"z": -2.8
+				"z": -5.7
 			},
 			"Rotation": {
 				"x": 0,
@@ -215,9 +215,9 @@
 			"Name": "B1-HTM Office",
 			"FloorNumber": 1,
 			"Position": {
-				"x": -4.75,
+				"x": 6.75,
 				"y": -0.5,
-				"z": -2.8
+				"z": -5.7
 			},
 			"Rotation": {
 				"x": 0,
@@ -226,12 +226,12 @@
 			}
 		},
 		{
-			"Name": "B1-Educator's Office",
+			"Name": "B1-Educator's Office 1",
 			"FloorNumber": 1,
 			"Position": {
-				"x": -6.25,
+				"x": 5.2,
 				"y": -0.5,
-				"z": -2.25
+				"z": -5.15
 			},
 			"Rotation": {
 				"x": 0,
@@ -240,12 +240,12 @@
 			}
 		},
 		{
-			"Name": "B1-Office 4",
+			"Name": "B1-Educator's Office 2",
 			"FloorNumber": 1,
 			"Position": {
-				"x": -6.25,
+				"x": 5.2,
 				"y": -0.5,
-				"z": 1.25
+				"z": -1.65
 			},
 			"Rotation": {
 				"x": 0,
@@ -257,9 +257,9 @@
 			"Name": "B1-Comfort Room 2",
 			"FloorNumber": 1,
 			"Position": {
-				"x": -6.25,
+				"x": 5.2,
 				"y": -0.5,
-				"z": 3.5
+				"z": 0.6
 			},
 			"Rotation": {
 				"x": 0,
@@ -271,9 +271,9 @@
 			"Name": "B1-Audio Visual Room",
 			"FloorNumber": 1,
 			"Position": {
-				"x": 1,
+				"x": 12.5,
 				"y": -0.5,
-				"z": 2.75
+				"z": -0.15
 			},
 			"Rotation": {
 				"x": 0,
@@ -285,9 +285,9 @@
 			"Name": "B1-COMLAB 1",
 			"FloorNumber": 1,
 			"Position": {
-				"x": 6.75,
+				"x": 18.25,
 				"y": -0.5,
-				"z": 0.7
+				"z": -2.2
 			},
 			"Rotation": {
 				"x": 0,
@@ -299,9 +299,9 @@
 			"Name": "B1-COMLAB 2",
 			"FloorNumber": 1,
 			"Position": {
-				"x": 6.5,
+				"x": 18,
 				"y": -0.5,
-				"z": 2.75
+				"z": -0.15
 			},
 			"Rotation": {
 				"x": 0,
@@ -313,9 +313,9 @@
 			"Name": "B1-Office of the Campus Dean",
 			"FloorNumber": 1,
 			"Position": {
-				"x": 7.5,
+				"x": 19,
 				"y": -0.5,
-				"z": -4
+				"z": -6.9
 			},
 			"Rotation": {
 				"x": 0,
@@ -327,9 +327,9 @@
 			"Name": "B1-StockRoom",
 			"FloorNumber": 1,
 			"Position": {
-				"x": 8,
+				"x": 19.5,
 				"y": -0.5,
-				"z": -3.5
+				"z": -6.4
 			},
 			"Rotation": {
 				"x": 0,
