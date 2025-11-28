@@ -1,180 +1,333 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Unity.AI.Navigation;
 
+/// <summary>
+/// AR-friendly NavigationController:
+/// - Agent used for path calculations only (agent.updatePosition = false)
+/// - Uses AR camera position as source (user position)
+/// - Draws path with LineRenderer and rotates an in-front arrow to point to next waypoint
+/// - Snaps anchors/targets to nearest NavMesh to avoid cross-floor snapping
+/// - BeginNavigation(AnchorManager.AnchorData start, string targetName) API
+/// </summary>
 [RequireComponent(typeof(LineRenderer))]
 public class NavigationController : MonoBehaviour
 {
     public static NavigationController Instance { get; private set; }
 
-    [Header("References")]
-    public NavMeshAgent agent;          // assign Player's NavMeshAgent
-    public Transform target;            // destination Transform
-    public LineRenderer lineRenderer;   // path visualization
-    public NavigationStatusController statusController; // Navigation status UI
+    [Header("Core references")]
+    public NavMeshAgent agent;                // NavMeshAgent used for path calculation only
+    public Transform arCamera;                // AR camera / XR origin camera transform
+    public LineRenderer lineRenderer;         // draws path
+    public GameObject arrowPrefab;            // optional 3D arrow prefab (Option A behaviour)
+    public GameObject targetPinPrefab;        // optional target pin prefab
+    public NavigationStatusController statusController; // shows Status/Building/Target
 
-    [Header("Visuals")]
-    public float lineHeightOffset = 0.1f;
-    public Color lineColor = Color.cyan;
-    public float arriveDistance = 1.0f;
+    [Header("Behavior")]
+    public float arriveDistance = 1.0f;       // when user is within this distance — arrived
+    public float arrowDistanceFromCamera = 1.5f; // position arrow this far in front of camera
+    public float arrowSlerpSpeed = 10f;       // arrow rotation smoothing
+    
 
+    [Header("Optional: Multi-floor NavMeshSurfaces")]
+    public List<NavMeshSurface> navMeshSurfaces = new List<NavMeshSurface>();
+    // Use SwitchToNavMeshFor(buildingId, floor) to enable appropriate surface(s)
+
+    // Public state
+    public bool IsNavigating => navigating;
+
+    // Internal
     private NavMeshPath navPath;
+    private bool navigating = false;
     private bool hasArrived = false;
+
+    private AnchorManager.AnchorData startAnchor;
+    private TargetData targetData;
+
+    private GameObject activeTargetPin;
+    private GameObject activeArrow;
+    public Transform target;
+
+
+    private List<Vector3> currentCorners = new List<Vector3>();
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
-            Destroy(gameObject);
-        else
-            Instance = this;
+        if (Instance != null && Instance != this) Destroy(gameObject);
+        else Instance = this;
+
+        if (agent == null) Debug.LogError("[NavigationController] Assign a NavMeshAgent in Inspector.");
+        if (arCamera == null && Camera.main != null) arCamera = Camera.main.transform;
+
+        // Agent must not drive the camera - use it as a path calculator only
+        if (agent != null)
+        {
+            agent.updatePosition = false;
+            agent.updateRotation = false;
+        }
+
+        if (lineRenderer == null)
+            lineRenderer = GetComponent<LineRenderer>();
 
         navPath = new NavMeshPath();
-        lineRenderer.startColor = lineColor;
-        lineRenderer.endColor = lineColor;
+
+        // Instantiate arrow now (if provided)
+        if (arrowPrefab != null)
+        {
+            activeArrow = Instantiate(arrowPrefab);
+            activeArrow.SetActive(false);
+        }
     }
 
     void Update()
     {
-        if (target == null || agent == null) return;
+        if (!navigating || targetData == null || arCamera == null) return;
 
-        // Don't update if already arrived
-        if (hasArrived) return;
+        Vector3 userPos = arCamera.position;
 
-        // Update NavMesh path
-        NavMesh.CalculatePath(agent.transform.position, target.position, NavMesh.AllAreas, navPath);
+        // Recalculate path from user to target
+        NavMesh.CalculatePath(userPos, activeTargetPin.transform.position, NavMesh.AllAreas, navPath);
+        UpdateCornersFromPath(navPath);
+
         DrawPath();
 
-        // Move agent toward destination
-        agent.SetDestination(target.position);
+        UpdateArrow(userPos);
 
-        // Check arrival - only call once
-        if (!agent.pathPending && agent.remainingDistance <= arriveDistance && !hasArrived)
+        // Use user distance for arrival detection (not agent.remainingDistance)
+        float dist = Vector3.Distance(userPos, activeTargetPin.transform.position);
+
+        if (!hasArrived && dist <= arriveDistance)
         {
-            OnArrived();
             hasArrived = true;
+            OnArrived();
         }
+    }
+
+    #region Public API
+
+    /// <summary>
+    /// Start navigation given a scanned start anchor and a target name from TargetManager.
+    /// This will:
+    /// - attempt to snap anchor & target to the nearest NavMesh
+    /// - optionally switch NavMesh surfaces (if you have them assigned)
+    /// - spawn a target pin and enable arrow/line drawing
+    /// </summary>
+    public void BeginNavigation(AnchorManager.AnchorData start, string targetName, bool warpAgentToStart = false)
+    {
+        if (start == null)
+        {
+            Debug.LogError("[NavigationController] BeginNavigation called with null start.");
+            return;
+        }
+        if (string.IsNullOrEmpty(targetName))
+        {
+            Debug.LogError("[NavigationController] BeginNavigation called with empty targetName.");
+            return;
+        }
+
+        // Find the target from TargetManager (assumes TargetManager.Instance exists and TryGetTarget)
+        if (!TargetManager.Instance.TryGetTarget(targetName, out var td))
+        {
+            Debug.LogError($"[NavigationController] Target not found: {targetName}");
+            return;
+        }
+
+        startAnchor = start;
+        targetData = td;
+
+        // If you use navMeshSurfaces per building/floor, switch to relevant one
+        // This is optional; implement matching logic by buildingId/floor stored in AnchorData & surfaces
+        SwitchToNavMeshFor(startAnchor.BuildingId, startAnchor.Floor);
+
+        // Spawn/position target pin
+        SpawnOrPlaceTargetPin(targetData);
+
+        // Snap start and target to NavMesh (prevents snapping to wrong floor)
+        Vector3 snappedStart = SampleNavMeshPosition(startAnchor.PositionVector, 2f, fallback: startAnchor.PositionVector);
+        Vector3 snappedTarget = SampleNavMeshPosition(activeTargetPin.transform.position, 2f, fallback: activeTargetPin.transform.position);
+
+        // Optionally warp the agent (invisible helper) onto the navmesh near the user/start.
+        // We avoid warping the AR camera. Warping the agent is safe (agent is not the camera).
+        if (agent != null)
+        {
+            // If warpAgentToStart is true, attempt to place agent at snappedStart;
+            // otherwise ensure agent resides on navmesh near the camera
+            Vector3 agentPlace = arCamera != null ? arCamera.position : snappedStart;
+
+            if (warpAgentToStart)
+                agentPlace = snappedStart;
+
+            if (NavMesh.SamplePosition(agentPlace, out NavMeshHit agentHit, 2.0f, NavMesh.AllAreas))
+                agent.Warp(agentHit.position);
+            else
+                Debug.LogWarning("[NavigationController] Could not place agent exactly — continuing.");
+        }
+
+        // Mark state
+        navigating = true;
+        hasArrived = false;
+
+        // Show arrow and status
+        if (activeArrow != null) activeArrow.SetActive(true);
+        if (statusController != null)
+            statusController.SetNavigationInfo(startAnchor.BuildingId ?? "-", targetData.Name);
+
+        Debug.Log($"[NavigationController] Navigation started from {startAnchor.AnchorId} to {targetData.Name}");
+    }
+
+    /// <summary>
+    /// Stops current navigation and clears visuals.
+    /// </summary>
+    public void StopNavigation()
+    {
+        navigating = false;
+        hasArrived = false;
+
+        if (activeTargetPin != null) Destroy(activeTargetPin);
+        activeTargetPin = null;
+
+        if (activeArrow != null) activeArrow.SetActive(false);
+
+        lineRenderer.positionCount = 0;
+
+        if (statusController != null)
+            statusController.UpdateStatus("Navigation stopped");
+    }
+
+    #endregion
+
+    #region Helpers - Path & Visuals
+
+    private void UpdateCornersFromPath(NavMeshPath path)
+    {
+        currentCorners.Clear();
+        if (path == null || path.corners == null || path.corners.Length == 0) return;
+        currentCorners.AddRange(path.corners);
     }
 
     private void DrawPath()
     {
-        if (navPath.corners.Length == 0)
+        if (navPath == null || navPath.corners == null || navPath.corners.Length == 0)
         {
             lineRenderer.positionCount = 0;
             return;
         }
 
-        lineRenderer.positionCount = navPath.corners.Length;
-        for (int i = 0; i < navPath.corners.Length; i++)
+        // Raise the path a little so it is visible above the floor (tweak as needed)
+        int count = navPath.corners.Length;
+        lineRenderer.positionCount = count;
+        for (int i = 0; i < count; i++)
         {
-            Vector3 pos = navPath.corners[i];
-            pos.y += lineHeightOffset;
-            lineRenderer.SetPosition(i, pos);
+            Vector3 p = navPath.corners[i];
+            p.y += 0.05f; // small offset
+            lineRenderer.SetPosition(i, p);
         }
     }
 
-    // ✅ This method must exist to clear the error CS0103
-    private void OnArrived()
+    private void SpawnOrPlaceTargetPin(TargetData td)
     {
-        Debug.Log("✅ Arrived at destination!");
-        lineRenderer.positionCount = 0;
+        // Clear old
+        if (activeTargetPin != null) Destroy(activeTargetPin);
 
-        // Update navigation status UI
-        if (statusController != null)
+        Vector3 pos = td.Position.ToVector3();
+        Quaternion rot = Quaternion.Euler(td.Rotation.ToVector3());
+
+        if (targetPinPrefab != null)
         {
-            statusController.OnArrived();
-        }
-    }
-
-    // ✅ This method must exist before BeginNavigation()
-    public void SetDestination(Transform dest)
-    {
-        target = dest;
-    }
-
-    // ✅ This method fixes BeginNavigation() call in AppFlowController
-// Start navigation using a startAnchor (AnchorData) and a target name.
-public void BeginNavigation(AnchorManager.AnchorData startAnchor, string targetName)
-{
-    if (string.IsNullOrEmpty(targetName))
-    {
-        Debug.LogWarning("BeginNavigation called with empty target name.");
-        return;
-    }
-
-    // Try to find target in TargetManager
-    if (!TargetManager.Instance.TryGetTarget(targetName, out var targetData))
-    {
-        Debug.LogWarning($"No target data found for: {targetName}");
-        return;
-    }
-
-    // Find or create a target marker in the scene
-    GameObject targetObj = GameObject.Find(targetData.Name);
-    if (targetObj == null)
-    {
-        targetObj = new GameObject(targetData.Name);
-        targetObj.transform.position = targetData.Position.ToVector3();
-        targetObj.transform.rotation = Quaternion.Euler(targetData.Rotation.ToVector3());
-    }
-
-    // If a startAnchor was provided, warp the agent there
-    if (startAnchor != null)
-    {
-        if (agent != null)
-        {
-            Vector3 anchorPos = startAnchor.Position.ToVector3();
-
-            // Adjust anchor Y position to match NavMesh level (Y=0)
-            Vector3 adjustedAnchorPos = new Vector3(anchorPos.x, 0f, anchorPos.z);
-
-            // Try to find a valid NavMesh position near the adjusted anchor position
-            if (NavMesh.SamplePosition(adjustedAnchorPos, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
-            {
-                // Successfully found a valid NavMesh position, warp there
-                agent.Warp(hit.position);
-                Debug.Log($"📍 Agent warped to valid NavMesh position near anchor {startAnchor.AnchorId}: {hit.position}");
-            }
-            else
-            {
-                // No valid NavMesh found near anchor, try agent's current position
-                Debug.LogWarning($"⚠️ No valid NavMesh found within 5m of adjusted anchor {adjustedAnchorPos}. Starting from current position.");
-            }
+            activeTargetPin = Instantiate(targetPinPrefab, pos, rot);
+            activeTargetPin.name = "TargetPin-" + td.Name;
         }
         else
         {
-            Debug.LogWarning("BeginNavigation: NavMeshAgent is not assigned; cannot warp to anchor.");
+            activeTargetPin = new GameObject("TargetPin-" + td.Name);
+            activeTargetPin.transform.position = pos;
+            activeTargetPin.transform.rotation = rot;
         }
     }
-    else
+
+    private void UpdateArrow(Vector3 userPos)
     {
-        Debug.Log("BeginNavigation: startAnchor is null — starting navigation from current agent position.");
+        if (activeArrow == null) return;
+
+        // place arrow a fixed distance in front of camera (Option A)
+        Vector3 forward = arCamera.forward;
+        Vector3 arrowPos = arCamera.position + forward.normalized * arrowDistanceFromCamera;
+        activeArrow.transform.position = arrowPos;
+
+        // compute the look target: the next corner of the path, otherwise final target
+        Vector3 lookTarget = activeTargetPin != null ? activeTargetPin.transform.position : (currentCorners.Count > 0 ? currentCorners[currentCorners.Count - 1] : arrowPos + forward);
+        if (currentCorners.Count > 1)
+            lookTarget = currentCorners[Mathf.Min(1, currentCorners.Count - 1)]; // prefer the next corner after current
+        else if (currentCorners.Count == 1)
+            lookTarget = currentCorners[0];
+
+        // direction to face (ignore vertical tilt so arrow is horizontal)
+        Vector3 dir = lookTarget - activeArrow.transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.001f) dir = arCamera.forward;
+
+        Quaternion targetRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
+        activeArrow.transform.rotation = Quaternion.Slerp(activeArrow.transform.rotation, targetRot, Time.deltaTime * arrowSlerpSpeed);
     }
 
-    // Extract building information from target name (e.g., "B1-Quality Assurance Office")
-    string buildingName = targetName;
-    string destinationName = targetName;
+    #endregion
 
-    if (targetName.Contains("-"))
+    #region NavMesh utilities / floor switching
+
+    /// <summary>
+    /// Samples the nearest NavMesh position within maxDistance. Returns fallback if none found.
+    /// </summary>
+    private Vector3 SampleNavMeshPosition(Vector3 pos, float maxDistance = 2f, Vector3 fallback = default)
     {
-        string[] parts = targetName.Split('-');
-        if (parts.Length >= 2)
+        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, maxDistance, NavMesh.AllAreas))
+            return hit.position;
+        return fallback == default ? pos : fallback;
+    }
+
+    /// <summary>
+    /// Optional: enable/disable NavMeshSurface components to switch active NavMesh.
+    /// You must assign navMeshSurfaces in Inspector and name them or provide custom metadata.
+    /// This method does a best-effort toggle by matching substrings in surface.name.
+    /// </summary>
+    public void SwitchToNavMeshFor(string buildingId, int floor)
+    {
+        if (navMeshSurfaces == null || navMeshSurfaces.Count == 0) return;
+
+        string needle = (buildingId ?? "") + $"_F{floor}";
+        bool anyMatched = false;
+
+        foreach (var s in navMeshSurfaces)
         {
-            buildingName = parts[0];
-            destinationName = parts[1];
+            if (s == null) continue;
+            bool match = s.name.Contains(needle) || s.name.Contains(buildingId) || s.name.Contains($"F{floor}");
+            s.enabled = match;
+            anyMatched |= match;
         }
+
+        if (!anyMatched)
+            Debug.LogWarning($"[NavigationController] No navmesh surface matched for {buildingId} floor {floor}. Ensure navMeshSurfaces are assigned and named consistently.");
+        else
+            Debug.Log($"[NavigationController] Switched NavMesh to {buildingId} floor {floor} (best-effort).");
     }
 
-    // Update navigation status UI
-    if (statusController != null)
+    #endregion
+
+    #region Arrival callback
+
+    private void OnArrived()
     {
-        statusController.SetNavigationInfo(buildingName, destinationName);
+        Debug.Log("✅ Arrived at destination!");
+        // freeze visuals
+        lineRenderer.positionCount = 0;
+        if (activeArrow != null) activeArrow.SetActive(false);
+
+        if (statusController != null)
+            statusController.OnArrived();
+
+        // keep navigating = false to stop updating
+        navigating = false;
     }
-
-    // Set destination and begin navigating
-    SetDestination(targetObj.transform);
-
-    Debug.Log($"🚀 Navigation started to {targetName}");
-}
 
     public void EndNavigation()
     {
@@ -202,4 +355,5 @@ public void BeginNavigation(AnchorManager.AnchorData startAnchor, string targetN
 
         Debug.Log("🛑 Navigation terminated");
     }
+    #endregion
 }

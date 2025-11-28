@@ -324,7 +324,7 @@
 			}
 		},
 		{
-			"Name": "B1-StockRoom",
+			"Name": "B1-BSIT-StockRoom",
 			"FloorNumber": 1,
 			"Position": {
 				"x": 19.5,
@@ -337,14 +337,14 @@
 				"z": 0
 			}
 		},
-
+		
 		{
 			"Name": "B2-NB 1",
 			"FloorNumber": 2,
 			"Position": {
-				"x": 2.15,
+				"x": -9.5,
 				"y": -0.5,
-				"z": -2.8
+				"z": 6.25
 			},
 			"Rotation": {
 				"x": 0,
@@ -356,9 +356,9 @@
 			"Name": "B2-NB 2",
 			"FloorNumber": 2,
 			"Position": {
-				"x": -1.25,
+				"x": -12.9,
 				"y": -0.5,
-				"z": -2.8
+				"z": 6.25
 			},
 			"Rotation": {
 				"x": 0,
@@ -370,9 +370,9 @@
 			"Name": "B2-NB 3",
 			"FloorNumber": 2,
 			"Position": {
-				"x": -4.75,
+				"x": -16.35,
 				"y": -0.5,
-				"z": -2.8
+				"z": 6.25
 			},
 			"Rotation": {
 				"x": 0,
@@ -384,9 +384,9 @@
 			"Name": "B2-NB 4",
 			"FloorNumber": 2,
 			"Position": {
-				"x": -8.25,
+				"x": -20,
 				"y": -0.5,
-				"z": -2.8
+				"z": 6.25
 			},
 			"Rotation": {
 				"x": 0,
@@ -398,9 +398,9 @@
 			"Name": "B2-NB 5",
 			"FloorNumber": 2,
 			"Position": {
-				"x": -6.25,
+				"x": -18,
 				"y": -0.5,
-				"z": 0.25
+				"z": 9.3
 			},
 			"Rotation": {
 				"x": 0,
@@ -412,9 +412,9 @@
 			"Name": "B2-NB 6",
 			"FloorNumber": 2,
 			"Position": {
-				"x": 8.5,
+				"x": -3.25,
 				"y": -0.5,
-				"z": 2.75
+				"z": 11.8
 			},
 			"Rotation": {
 				"x": 0,
@@ -426,9 +426,9 @@
 			"Name": "B2-NB 7",
 			"FloorNumber": 2,
 			"Position": {
-				"x": 5.5,
+				"x": -6.25,
 				"y": -0.5,
-				"z": 2.75
+				"z": 11.8
 			},
 			"Rotation": {
 				"x": 0,
@@ -440,9 +440,9 @@
 			"Name": "B2-NB 8",
 			"FloorNumber": 2,
 			"Position": {
-				"x": 2.5,
+				"x": -9.25,
 				"y": -0.5,
-				"z": 2.75
+				"z": 11.8
 			},
 			"Rotation": {
 				"x": 0,
@@ -454,9 +454,9 @@
 			"Name": "B2-NB 9",
 			"FloorNumber": 2,
 			"Position": {
-				"x": 6.75,
+				"x": -5,
 				"y": -0.5,
-				"z": 0
+				"z": 9.05
 			},
 			"Rotation": {
 				"x": 0,
@@ -468,9 +468,9 @@
 			"Name": "B2-Clinic",
 			"FloorNumber": 2,
 			"Position": {
-				"x": 0.25,
+				"x": -11.5,
 				"y": -0.5,
-				"z": 2.75
+				"z": 11.8
 			},
 			"Rotation": {
 				"x": 0,
@@ -482,9 +482,9 @@
 			"Name": "B2-Comfort Room 3",
 			"FloorNumber": 2,
 			"Position": {
-				"x": -6.25,
+				"x": -18,
 				"y": -0.5,
-				"z": 3.5
+				"z": 12.55
 			},
 			"Rotation": {
 				"x": 0,
@@ -496,9 +496,9 @@
 			"Name": "B2-Stock Room",
 			"FloorNumber": 2,
 			"Position": {
-				"x": 7.5,
+				"x": -4.25,
 				"y": -0.5,
-				"z": -3
+				"z": 6
 			},
 			"Rotation": {
 				"x": 0,
@@ -511,9 +511,9 @@
 			"Name": "B2-Room 208",
 			"FloorNumber": 3,
 			"Position": {
-				"x": 0.375,
+				"x": 0.95,
 				"y": -50,
-				"z": -0.28
+				"z": 0.62
 			},
 			"Rotation": {
 				"x": 0,
@@ -525,9 +525,9 @@
 			"Name": "B2-Room 205",
 			"FloorNumber": 3,
 			"Position": {
-				"x": 0.11,
+				"x": 0.69,
 				"y": -50,
-				"z": -0.28
+				"z": 0.625
 			},
 			"Rotation": {
 				"x": 0,
@@ -539,9 +539,9 @@
 			"Name": "B2-Room 204",
 			"FloorNumber": 3,
 			"Position": {
-				"x": -0.065,
+				"x": 0.51,
 				"y": -50,
-				"z": -0.28
+				"z": 0.625
 			},
 			"Rotation": {
 				"x": 0,
@@ -553,9 +553,9 @@
 			"Name": "B2-Room 203",
 			"FloorNumber": 3,
 			"Position": {
-				"x": -0.24,
+				"x": 0.3325,
 				"y": -50,
-				"z": -0.28
+				"z": 0.625
 			},
 			"Rotation": {
 				"x": 0,
@@ -567,9 +567,9 @@
 			"Name": "B2-Room 202",
 			"FloorNumber": 3,
 			"Position": {
-				"x": -0.315,
+				"x": 0.265,
 				"y": -50,
-				"z": 0.225
+				"z": 0.68
 			},
 			"Rotation": {
 				"x": 0,
@@ -581,9 +581,9 @@
 			"Name": "B2-Room 201",
 			"FloorNumber": 3,
 			"Position": {
-				"x": -0.315,
+				"x": 0.265,
 				"y": -50,
-				"z": -0.225
+				"z": 0.945
 			},
 			"Rotation": {
 				"x": 0,
@@ -609,9 +609,9 @@
 			"Name": "B2-Room 207",
 			"FloorNumber": 3,
 			"Position": {
-				"x": -0.025,
+				"x": 0.55,
 				"y": -50,
-				"z": 0.275
+				"z": 1.185
 			},
 			"Rotation": {
 				"x": 0,
@@ -623,9 +623,9 @@
 			"Name": "B2-Room 206",
 			"FloorNumber": 3,
 			"Position": {
-				"x": 0.125,
+				"x": 0.7,
 				"y": -50,
-				"z": 0.275
+				"z": 1.185
 			},
 			"Rotation": {
 				"x": 0,
@@ -637,9 +637,9 @@
 			"Name": "B2-Campus Library",
 			"FloorNumber": 3,
 			"Position": {
-				"x": 0.35,
+				"x": 0.9245,
 				"y": -50,
-				"z": 0.275
+				"z": 1.18
 			},
 			"Rotation": {
 				"x": 0,
@@ -651,9 +651,9 @@
 			"Name": "B2-Library Extension",
 			"FloorNumber": 3,
 			"Position": {
-				"x": 0.345,
+				"x": 0.92,
 				"y": -50,
-				"z": 0
+				"z": 0.91
 			},
 			"Rotation": {
 				"x": 0,
