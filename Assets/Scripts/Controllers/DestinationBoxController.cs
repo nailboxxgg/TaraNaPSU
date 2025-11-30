@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections;
 
+[RequireComponent(typeof(CanvasGroup))]
 public class DestinationBoxController : MonoBehaviour
 {
     [Header("Texts")]
@@ -20,6 +21,8 @@ public class DestinationBoxController : MonoBehaviour
 
     [Header("Polish")]
     public CanvasGroup canvasGroup; // for fade in/out
+
+    private Coroutine progressCoroutine;
 
     private void Awake()
     {
@@ -74,8 +77,9 @@ public class DestinationBoxController : MonoBehaviour
         // assuming anchors left aligned; change width
         float parentWidth = (progressBarFill.parent as RectTransform).rect.width;
         float targetWidth = parentWidth * normalized;
-        StopCoroutine("AnimateProgress");
-        StartCoroutine(AnimateProgress(targetWidth));
+        if (progressCoroutine != null)
+            StopCoroutine(progressCoroutine);
+        progressCoroutine = StartCoroutine(AnimateProgress(targetWidth));
     }
 
     IEnumerator AnimateProgress(float targetWidth)

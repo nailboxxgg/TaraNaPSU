@@ -60,6 +60,8 @@ public class AppFlowController : MonoBehaviour
         }
 
         selectedTargetName = targetName;
+        isNavigating = true; // Mark navigation as active
+
         if (navigationController != null)
             navigationController.BeginNavigation(currentAnchor, targetName);
 
@@ -67,6 +69,7 @@ public class AppFlowController : MonoBehaviour
 
     // ---------- CALLED FROM OTHER SCRIPTS ----------
  // stores last scanned anchor
+    private bool isNavigating = false; // Track if navigation is active
 
 // ---------- QR Payload Class ----------
     [System.Serializable]
@@ -91,7 +94,7 @@ public class AppFlowController : MonoBehaviour
         Debug.Log($"📷 QR scanned: {qrResult}");
 
         // Try to parse JSON
-        QRPayload payload = null;
+        QRPayload payload;
 
         try
         {
@@ -118,22 +121,34 @@ public class AppFlowController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"✅ Anchor Scanned: {currentAnchor.AnchorId}");
+        Debug.Log($"✅ QR Recenter: User position updated to {currentAnchor.AnchorId}");
 
-        // Must have selected a target BEFORE scanning
-        if (string.IsNullOrEmpty(selectedTargetName))
+        // Check if user is currently navigating
+        if (isNavigating && !string.IsNullOrEmpty(selectedTargetName))
         {
-            Debug.LogWarning("⚠️ User has not selected a destination yet.");
+            Debug.Log($"🔄 Recentering active navigation to new anchor position");
+
+            // Update navigation with new anchor while keeping same target
+            if (NavigationController.Instance != null)
+                NavigationController.Instance.RecenterNavigation(currentAnchor, selectedTargetName);
+
             return;
         }
 
-    // Switch to navigation panel
-    ShowNavigationPanel(selectedTargetName);
+        // Must have selected a target BEFORE scanning for initial navigation
+        if (string.IsNullOrEmpty(selectedTargetName))
+        {
+            Debug.Log("ℹ️ QR scanned but no destination selected - anchor saved for future navigation");
+            return;
+        }
 
-    // Begin navigation
-    if (NavigationController.Instance != null)
-        NavigationController.Instance.BeginNavigation(currentAnchor, selectedTargetName);
-}
+        // Switch to navigation panel
+        ShowNavigationPanel(selectedTargetName);
+
+        // Begin navigation from new anchor position
+        if (NavigationController.Instance != null)
+            NavigationController.Instance.BeginNavigation(currentAnchor, selectedTargetName);
+    }
 
 
     public void StopNavigation()
@@ -141,11 +156,12 @@ public class AppFlowController : MonoBehaviour
         if (navigationController !=null)
         {
             NavigationPanel.SetActive(false);
-            navigationController.EndNavigation();
+            navigationController.StopNavigation();
         }
 
         // Reset all navigation state to fresh start
         ResetNavigationState();
+        isNavigating = false; // Mark navigation as inactive
 
         ShowWelcome();
     }
@@ -159,6 +175,7 @@ public class AppFlowController : MonoBehaviour
 
         // Reset all navigation state to fresh start
         ResetNavigationState();
+        isNavigating = false; // Mark navigation as inactive
 
         ShowQRCodePanel();
     }

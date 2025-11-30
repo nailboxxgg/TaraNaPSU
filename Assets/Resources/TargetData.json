@@ -198,7 +198,7 @@
 			}
 		},
 		{
-			"Name": "B1-CMT Office",
+			"Name": "B1-CMT-Office",
 			"FloorNumber": 1,
 			"Position": {
 				"x": 10.25,
@@ -212,7 +212,7 @@
 			}
 		},
 		{
-			"Name": "B1-HTM Office",
+			"Name": "B1-HTM-Office",
 			"FloorNumber": 1,
 			"Position": {
 				"x": 6.75,
@@ -268,7 +268,7 @@
 			}
 		},
 		{
-			"Name": "B1-Audio Visual Room",
+			"Name": "B1-AudioVisualRoom",
 			"FloorNumber": 1,
 			"Position": {
 				"x": 12.5,
@@ -282,7 +282,7 @@
 			}
 		},
 		{
-			"Name": "B1-COMLAB 1",
+			"Name": "B1-Comlab 01",
 			"FloorNumber": 1,
 			"Position": {
 				"x": 18.25,
@@ -296,7 +296,7 @@
 			}
 		},
 		{
-			"Name": "B1-COMLAB 2",
+			"Name": "B1-Comlab 02",
 			"FloorNumber": 1,
 			"Position": {
 				"x": 18,
@@ -324,7 +324,7 @@
 			}
 		},
 		{
-			"Name": "B1-BSIT-StockRoom",
+			"Name": "B1-Archive Room",
 			"FloorNumber": 1,
 			"Position": {
 				"x": 19.5,
