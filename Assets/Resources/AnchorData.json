@@ -42,7 +42,7 @@
     "AnchorId": "B1-Stair1-Down",
     "BuildingId": "B1",
     "Floor": 0,
-    "Position": { "x": 9, "y": -1, "z": -2.35 },
+    "Position": { "x": -14, "y": -1, "z": 1.1 },
     "Rotation": { "x": 0, "y": 0, "z": 0 },
     "Meta": "Stairway 1 (Ground)"
     },
@@ -51,7 +51,7 @@
       "AnchorId": "B1-Stair1-Up",
       "BuildingId": "B1",
       "Floor": 1,
-      "Position": { "x": 9, "y": -1, "z": -2.35 },
+      "Position": { "x": 8.5, "y": -1, "z": 1.1},
       "Rotation": { "x": 0, "y": 0, "z": 0 },
       "Meta": "Stairway 1 (First Floor)"
     },
@@ -61,7 +61,7 @@
     "AnchorId": "B1-Stair2-Down",
     "BuildingId": "B1",
     "Floor": 0,
-    "Position": { "x": -3.0, "y": -1.0, "z": 4.0 },
+    "Position": { "x": -2, "y": -1.0, "z": -5.25 },
     "Rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
     "Meta": "Stairway 2 (Ground)"
     },
@@ -70,7 +70,7 @@
       "AnchorId": "B1-Stair2-Up",
       "BuildingId": "B1",
       "Floor": 1,
-      "Position": { "x": -3.0, "y": -1.0, "z": 4.0 },
+      "Position": { "x": 20.5, "y": -1.0, "z": -5.1 },
       "Rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
       "Meta": "Stairway 2 (First Floor)"
     },

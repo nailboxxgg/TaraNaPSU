@@ -88,25 +88,8 @@ public class NavigationController : MonoBehaviour
             agent.updatePosition = false;
             agent.updateRotation = false;
 
-            // Ensure agent is properly initialized on NavMesh
-            if (!agent.isOnNavMesh)
-            {
-                Debug.LogWarning("[NavigationController] Agent is not on NavMesh at Start. Attempting to place...");
-                // Try to place agent on NavMesh at current position
-                if (arCamera != null)
-                {
-                    Vector3 agentPos = arCamera.position;
-                    if (NavMesh.SamplePosition(agentPos, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
-                    {
-                        agent.Warp(hit.position);
-                        Debug.Log($"[NavigationController] Agent placed on NavMesh at: {hit.position}");
-                    }
-                    else
-                    {
-                        Debug.LogWarning("[NavigationController] Could not place agent on NavMesh at startup.");
-                    }
-                }
-            }
+            // Delay agent placement to ensure NavMesh surfaces are ready
+            StartCoroutine(DelayedAgentPlacement());
         }
 
         if (lineRenderer == null)
@@ -128,6 +111,61 @@ public class NavigationController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Delay agent placement to ensure NavMesh surfaces are fully initialized
+    /// </summary>
+    private System.Collections.IEnumerator DelayedAgentPlacement()
+    {
+        // Wait a few frames for NavMesh surfaces to be ready
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+
+        if (agent == null) yield break;
+
+        // Try multiple attempts with increasing search radius
+        float[] searchRadii = { 2.0f, 5.0f, 10.0f, 20.0f };
+        bool placed = false;
+
+        for (int i = 0; i < searchRadii.Length && !placed; i++)
+        {
+            Vector3 agentPos = arCamera != null ? arCamera.position : Vector3.zero;
+
+            if (NavMesh.SamplePosition(agentPos, out NavMeshHit hit, searchRadii[i], NavMesh.AllAreas))
+            {
+                agent.Warp(hit.position);
+                Debug.Log($"[NavigationController] Agent placed on NavMesh at: {hit.position} (search radius: {searchRadii[i]})");
+                placed = true;
+            }
+            else
+            {
+                Debug.LogWarning($"[NavigationController] Could not place agent on NavMesh with radius {searchRadii[i]}");
+            }
+        }
+
+        if (!placed)
+        {
+            Debug.LogError("[NavigationController] Failed to place agent on NavMesh after multiple attempts. Navigation may not work properly.");
+        }
+
+        // Set flag to indicate agent is ready
+        agentReady = placed;
+    }
+
+    /// <summary>
+    /// Check if agent is ready for navigation operations
+    /// </summary>
+    public bool IsAgentReady()
+    {
+        return agent != null && agent.isOnNavMesh && agentReady;
+    }
+
+    // Internal flag to track agent readiness
+    private bool agentReady = false;
+
+    [Header("Performance Settings")]
+    public float pathCalculationInterval = 0.5f; // Recalculate path every 0.5s
+    private float lastPathCalcTime = 0f;
+
     void Update()
     {
         if (!navigating || targetData == null || arCamera == null) return;
@@ -137,16 +175,74 @@ public class NavigationController : MonoBehaviour
         // Check if activeTargetPin exists before using it
         if (activeTargetPin == null)
         {
-            Debug.LogWarning("[NavigationController] activeTargetPin is null, skipping path calculation");
+            // For multi-floor navigation, it's normal for target pin to be null during stairway segments
+            // Only warn if we're not in a multi-floor scenario
+            if (multiFloorManager == null || !multiFloorManager.IsMultiFloorNavigationActive)
+            {
+                Debug.LogWarning("[NavigationController] activeTargetPin is null, skipping path calculation");
+                return;
+            }
+            else
+            {
+                // Multi-floor navigation active - target pin might be temporarily null during floor transitions
+                // Try to get marker from TargetMarkerManager or create temporary one
+                if (TargetMarkerManager.Instance != null && targetData != null)
+                {
+                    // First try to get the marker without calling ShowOnlyTarget to avoid infinite calls
+                    activeTargetPin = TargetMarkerManager.Instance.GetCurrentActiveMarker();
+
+                    if (activeTargetPin == null)
+                    {
+                        // Try to show the target marker
+                        TargetMarkerManager.Instance.ShowOnlyTarget(targetData.Name);
+                        activeTargetPin = TargetMarkerManager.Instance.GetCurrentActiveMarker();
+                    }
+
+                    if (activeTargetPin == null)
+                    {
+                        Debug.LogWarning("[NavigationController] No marker found for multi-floor target, creating temporary pin");
+                        SpawnOrPlaceTargetPin(targetData);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[NavigationController] Cannot proceed without target pin for multi-floor navigation");
+                    return;
+                }
+            }
+        }
+
+        // Double-check that activeTargetPin is not null before using it
+        if (activeTargetPin == null)
+        {
+            Debug.LogWarning("[NavigationController] activeTargetPin is still null after recovery attempts, skipping frame");
             return;
         }
 
-        // Recalculate path from user to target with current floor constraint
-        int currentFloorArea = GetCurrentNavMeshArea();
-        NavMesh.CalculatePath(userPos, activeTargetPin.transform.position, currentFloorArea, navPath);
-        UpdateCornersFromPath(navPath);
+        // --- Performance Optimization: Throttle Path Calculation ---
+        if (Time.time - lastPathCalcTime > pathCalculationInterval)
+        {
+            lastPathCalcTime = Time.time;
 
-        DrawPath();
+            // Recalculate path from user to target with current floor constraint
+            int currentFloorArea = GetCurrentNavMeshArea();
+            NavMesh.CalculatePath(userPos, activeTargetPin.transform.position, currentFloorArea, navPath);
+            UpdateCornersFromPath(navPath);
+        }
+
+        // Check if we should hide the navigation line during stair transitions
+        bool shouldHideNavLine = ShouldHideNavLineDuringStairTransition();
+
+        if (!shouldHideNavLine)
+        {
+            DrawPath();
+        }
+        else
+        {
+            // Hide the line renderer during stair transition
+            if (lineRenderer != null)
+                lineRenderer.positionCount = 0;
+        }
 
         UpdateArrow(userPos);
 
@@ -413,15 +509,28 @@ public class NavigationController : MonoBehaviour
         Vector3 snappedTarget = SampleNavMeshPosition(activeTargetPin.transform.position, 2f, fallback: activeTargetPin.transform.position);
 
         // Warp the agent to new start position for path calculation
-        if (agent != null && agent.isOnNavMesh)
+        if (agent != null)
         {
             Vector3 agentPlace = arCamera != null ? arCamera.position : snappedStart;
-            if (NavMesh.SamplePosition(agentPlace, out NavMeshHit agentHit, 2.0f, NavMesh.AllAreas))
-                agent.Warp(agentHit.position);
-        }
-        else if (agent != null)
-        {
-            Debug.LogWarning("[NavigationController] Agent not on NavMesh, skipping warp operation.");
+
+            // Try to place agent on NavMesh with increasing search radius
+            float[] searchRadii = { 2.0f, 5.0f, 10.0f };
+            bool placed = false;
+
+            for (int i = 0; i < searchRadii.Length && !placed; i++)
+            {
+                if (NavMesh.SamplePosition(agentPlace, out NavMeshHit agentHit, searchRadii[i], NavMesh.AllAreas))
+                {
+                    agent.Warp(agentHit.position);
+                    Debug.Log($"[NavigationController] Agent placed on NavMesh for recentering at: {agentHit.position} (radius: {searchRadii[i]})");
+                    placed = true;
+                }
+            }
+
+            if (!placed)
+            {
+                Debug.LogWarning("[NavigationController] Could not place agent on NavMesh for recentering. Path calculation may be affected.");
+            }
         }
 
         // Update navigation status
@@ -711,6 +820,29 @@ public class NavigationController : MonoBehaviour
 
     #endregion
 
+    #region Navigation Line Control
+
+    /// <summary>
+    /// Determines if navigation line should be hidden during stair transitions
+    /// </summary>
+    private bool ShouldHideNavLineDuringStairTransition()
+    {
+        // If not in multi-floor navigation, always show the line
+        if (multiFloorManager == null || !multiFloorManager.IsMultiFloorNavigationActive)
+            return false;
+
+        // Get current navigation segment
+        var currentSegment = multiFloorManager.GetCurrentSegment;
+        if (currentSegment == null)
+            return false;
+
+        // Hide navigation line only for stairway transition segments
+        // This creates the effect: show line to stairway -> hide during stairs -> show on new floor
+        return currentSegment.IsStairwayTransition;
+    }
+
+    #endregion
+
     #region Arrival callback
 
     private void OnArrived()
@@ -750,15 +882,15 @@ public class NavigationController : MonoBehaviour
         // Stop the NavMeshAgent
         if (agent != null)
         {
-            agent.isStopped = true;
-            // Only reset path if agent is on NavMesh
-            if (agent.isOnNavMesh)
+            // Only stop agent if it's active and on NavMesh
+            if (agent.isOnNavMesh && agent.isActiveAndEnabled)
             {
+                agent.isStopped = true;
                 agent.ResetPath();
             }
             else
             {
-                Debug.LogWarning("[NavigationController] Agent not on NavMesh, skipping ResetPath()");
+                Debug.LogWarning("[NavigationController] Agent not properly placed on NavMesh, skipping agent operations");
             }
         }
 

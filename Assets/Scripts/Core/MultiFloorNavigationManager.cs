@@ -15,6 +15,7 @@ public class MultiFloorNavigationManager : MonoBehaviour
     public NavigationController navigationController;
     public AnchorManager anchorManager;
     public TargetManager targetManager;
+    public StairPromptUI stairPromptUI;
 
     [Header("Navigation Settings")]
     public float stairwayArrivalDistance = 2.0f;  // Distance to consider "arrived" at stairway
@@ -51,6 +52,8 @@ public class MultiFloorNavigationManager : MonoBehaviour
             anchorManager = AnchorManager.Instance;
         if (targetManager == null)
             targetManager = TargetManager.Instance;
+        if (stairPromptUI == null)
+            stairPromptUI = FindObjectOfType<StairPromptUI>();
     }
 
     /// <summary>
@@ -280,6 +283,11 @@ public class MultiFloorNavigationManager : MonoBehaviour
 
         // Small delay to ensure NavMesh switch is complete
         StartCoroutine(DelayedFloorTransition(nextFloorStair));
+
+        if (stairPromptUI != null)
+        {
+            stairPromptUI.ShowMessage($"Switching to Floor {targetFloor}...", 2.0f);
+        }
     }
 
     /// <summary>
@@ -422,7 +430,7 @@ public class MultiFloorNavigationManager : MonoBehaviour
         Vector3 snappedTarget = navigationController.SampleNavMeshPosition(targetPosition, 2f, fallback: targetPosition);
 
         // Calculate path using NavigationController's internal method
-        if (navigationController.agent != null && navigationController.agent.isOnNavMesh)
+        if (navigationController.IsAgentReady())
         {
             // Use the same path calculation logic as NavigationController
             int currentFloorArea = navigationController.GetCurrentNavMeshArea();
@@ -435,7 +443,7 @@ public class MultiFloorNavigationManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[MultiFloorNavigationManager] Cannot calculate path - NavigationController agent is not available");
+            Debug.LogWarning("[MultiFloorNavigationManager] Cannot calculate path - NavigationController agent is not ready yet. This is normal during initialization.");
         }
 
         // Start navigation to stairway position
@@ -457,10 +465,22 @@ public class MultiFloorNavigationManager : MonoBehaviour
     /// </summary>
     private void ShowStairwayPrompt(NavigationSegment segment)
     {
-        // You can integrate this with existing StairPromptUI or create custom UI
-        Debug.Log($"📍 Please take the stairs to {(segment.NextFloorBuildingId == segment.BuildingId ? "next floor" : segment.NextFloorBuildingId)} - {segment.StairwayId}");
+        string msg = $"Head to {segment.StairwayId}";
+        
+        // Try to determine direction (Up/Down) by looking at next segment
+        if (currentSegmentIndex + 1 < navigationPath.Count)
+        {
+            var nextSeg = navigationPath[currentSegmentIndex + 1];
+            string direction = nextSeg.Floor > segment.Floor ? "UP" : "DOWN";
+            msg = $"Go {direction} stairs to Floor {nextSeg.Floor}";
+        }
 
-        // You could show a UI panel here with instructions
+        Debug.Log($"[UI] Showing prompt: {msg}");
+        
+        if (stairPromptUI != null)
+        {
+            stairPromptUI.ShowMessage(msg, 5.0f);
+        }
     }
 
     /// <summary>

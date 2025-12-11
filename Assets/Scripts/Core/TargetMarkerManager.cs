@@ -88,7 +88,48 @@ public class TargetMarkerManager : MonoBehaviour
             {
                 if (showDebugLogs)
                     Debug.LogWarning($"[TargetMarkerManager] No marker found for: {targetName}");
+
+                // Create missing marker as fallback if prefab is available
+                if (targetMarkerPrefab != null)
+                {
+                    CreateSingleMarker(targetName);
+                }
+                else
+                {
+                    Debug.LogError($"[TargetMarkerManager] Cannot create marker for {targetName} - targetMarkerPrefab not assigned");
+                }
             }
+        }
+    }
+
+    /// <summary>
+    /// Create a single target marker dynamically
+    /// </summary>
+    private void CreateSingleMarker(string targetName)
+    {
+        if (TargetManager.Instance.TryGetTarget(targetName, out var targetData))
+        {
+            // Create parent if it doesn't exist
+            if (markersParent == null)
+            {
+                GameObject parent = new GameObject("TargetMarkers");
+                parent.transform.position = Vector3.zero;
+                markersParent = parent.transform;
+            }
+
+            Vector3 pos = targetData.Position.ToVector3();
+            Quaternion rot = Quaternion.Euler(targetData.Rotation.ToVector3());
+
+            GameObject marker = Instantiate(targetMarkerPrefab, pos, rot, markersParent);
+            marker.name = $"TargetPin-{targetName}";
+            allTargetMarkers[targetName] = marker;
+
+            if (showDebugLogs)
+                Debug.Log($"[TargetMarkerManager] Created missing marker for: {targetName} at {pos}");
+        }
+        else
+        {
+            Debug.LogError($"[TargetMarkerManager] Could not get target data for: {targetName}");
         }
     }
 
@@ -136,16 +177,56 @@ public class TargetMarkerManager : MonoBehaviour
 
         if (allTargetMarkers.TryGetValue(targetName, out GameObject marker))
         {
-            marker.SetActive(true);
-            currentActiveMarker = marker;
+            if (marker != null)
+            {
+                marker.SetActive(true);
+                currentActiveMarker = marker;
 
-            if (showDebugLogs)
-                Debug.Log($"[TargetMarkerManager] Showing marker for: {targetName}");
+                if (showDebugLogs)
+                    Debug.Log($"[TargetMarkerManager] Showing marker for: {targetName}");
+            }
+            else
+            {
+                // Remove the null marker from the dictionary and try to recreate it
+                allTargetMarkers.Remove(targetName);
+                if (showDebugLogs)
+                    Debug.LogWarning($"[TargetMarkerManager] Marker for {targetName} was destroyed, attempting to recreate");
+
+                // Try to recreate the missing marker
+                if (targetMarkerPrefab != null)
+                {
+                    CreateSingleMarker(targetName);
+                    if (allTargetMarkers.TryGetValue(targetName, out marker) && marker != null)
+                    {
+                        marker.SetActive(true);
+                        currentActiveMarker = marker;
+                        if (showDebugLogs)
+                            Debug.Log($"[TargetMarkerManager] Successfully recreated marker for: {targetName}");
+                    }
+                }
+            }
         }
         else
         {
             if (showDebugLogs)
-                Debug.LogWarning($"[TargetMarkerManager] No marker found to show for: {targetName}");
+                Debug.LogWarning($"[TargetMarkerManager] No marker found to show for: {targetName}, attempting to create it");
+
+            // Try to create the missing marker
+            if (targetMarkerPrefab != null)
+            {
+                CreateSingleMarker(targetName);
+                if (allTargetMarkers.TryGetValue(targetName, out marker) && marker != null)
+                {
+                    marker.SetActive(true);
+                    currentActiveMarker = marker;
+                    if (showDebugLogs)
+                        Debug.Log($"[TargetMarkerManager] Successfully created and showing marker for: {targetName}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"[TargetMarkerManager] Cannot create marker for {targetName} - targetMarkerPrefab not assigned");
+            }
         }
     }
 
@@ -154,12 +235,27 @@ public class TargetMarkerManager : MonoBehaviour
     /// </summary>
     public void HideAllMarkers()
     {
+        // Collect keys of null markers to remove them
+        var keysToRemove = new List<string>();
+
         foreach (var kvp in allTargetMarkers)
         {
             if (kvp.Value != null)
             {
                 kvp.Value.SetActive(false);
             }
+            else
+            {
+                keysToRemove.Add(kvp.Key);
+            }
+        }
+
+        // Remove null markers from dictionary
+        foreach (var key in keysToRemove)
+        {
+            allTargetMarkers.Remove(key);
+            if (showDebugLogs)
+                Debug.Log($"[TargetMarkerManager] Removed null marker for: {key}");
         }
 
         currentActiveMarker = null;
