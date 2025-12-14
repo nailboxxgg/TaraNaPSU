@@ -65,4 +65,18 @@ public class TargetManager : MonoBehaviour
 
     public List<string> GetAllTargetNames() => new List<string>(targets.Keys);
     public bool TryGetTarget(string name, out TargetData data) => targets.TryGetValue(name, out data);
+
+    /// <summary>
+    /// Update the targets list with fresh data (e.g. from Cloud Sync)
+    /// </summary>
+    public void UpdateTargets(List<TargetData> newTargets)
+    {
+        targets.Clear();
+        foreach (var target in newTargets)
+        {
+            if (!targets.ContainsKey(target.Name))
+                targets.Add(target.Name, target);
+        }
+        Debug.Log($"[TargetManager] Updated targets from Cloud. Count: {targets.Count}");
+    }
 }

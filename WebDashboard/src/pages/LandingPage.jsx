@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Download, Smartphone, Map, Navigation } from 'lucide-react';
+import Logo from '../assets/logo.png';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -8,11 +9,14 @@ const LandingPage = () => {
         <div className="landing-page">
             <nav className="landing-nav glass">
                 <div className="container flex items-center justify-between">
-                    <div className="logo-text text-primary" style={{ fontSize: '1.5rem' }}>TaraNaPSU</div>
+                    <div className="logo-container flex items-center gap-3">
+                        <img src={Logo} alt="TaraNaPSU Logo" className="nav-logo" />
+                        <div className="logo-text text-primary font-bold text-xl">TaraNaPSU</div>
+                    </div>
                     <div className="nav-links flex gap-8">
                         <a href="#features">Features</a>
                         <a href="#about">About</a>
-                        <NavLink to="/dashboard" className="text-primary font-bold">Admin Login</NavLink>
+                        <NavLink to="/login" className="text-primary font-bold">Admin Login</NavLink>
                     </div>
                     <div className="flex gap-4">
                         <a href="#download" className="btn btn-primary">
@@ -36,7 +40,7 @@ const LandingPage = () => {
                             <a href="#download" className="btn btn-primary">
                                 Download APK <Download size={18} />
                             </a>
-                            <NavLink to="/dashboard" className="btn btn-outline">
+                            <NavLink to="/login" className="btn btn-outline">
                                 Admin Dashboard
                             </NavLink>
                         </div>
@@ -57,8 +61,10 @@ const LandingPage = () => {
                         {/* Phone Mockup Frame */}
                         <div className="phone-mockup float-animation">
                             <div className="phone-screen bg-surface flex flex-col items-center justify-center text-center p-4">
-                                <div className="app-icon mb-4 bg-primary text-white w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold">T</div>
-                                <h3 className="text-primary font-bold">TaraNaPSU</h3>
+                                <div className="mb-4 w-20 h-20 flex items-center justify-center">
+                                    <img src={Logo} alt="App Logo" className="w-full h-full object-contain drop-shadow-md" />
+                                </div>
+                                <h3 className="text-primary font-bold text-lg">TaraNaPSU</h3>
                                 <p className="text-xs text-muted mb-6">AR Navigation System</p>
                                 <Map size={48} className="text-accent mb-2" />
                                 <div className="route-path w-full h-1 bg-gray-100 rounded overflow-hidden mt-4">

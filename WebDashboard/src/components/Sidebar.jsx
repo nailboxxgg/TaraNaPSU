@@ -1,14 +1,26 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Settings, LogOut, Shield } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, BookOpen, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import Logo from '../assets/logo.png';
 import './Sidebar.css';
 
 const Sidebar = () => {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        if (window.confirm("Are you sure you want to log out?")) {
+            logout();
+            navigate('/login');
+        }
+    };
+
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
                 <div className="logo-container">
-                    <div className="logo-icon"><Shield size={24} /></div>
+                    <img src={Logo} alt="Admin Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                     <h1 className="logo-text">Admin Panel</h1>
                 </div>
             </div>
@@ -30,7 +42,7 @@ const Sidebar = () => {
             </nav>
 
             <div className="sidebar-footer">
-                <button className="nav-item logout-btn">
+                <button onClick={handleLogout} className="nav-item logout-btn">
                     <LogOut size={20} />
                     <span>Logout</span>
                 </button>

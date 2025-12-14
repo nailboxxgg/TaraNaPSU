@@ -4,6 +4,8 @@ import Sidebar from '../components/Sidebar';
 import { Bell, Search, Menu } from 'lucide-react';
 import './DashboardLayout.css';
 
+import AdminIcon from '../assets/admin.png';
+
 const DashboardLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -26,10 +28,10 @@ const DashboardLayout = () => {
                             <span className="badge">3</span>
                         </button>
                         <div className="user-profile">
-                            <div className="avatar">A</div>
+                            <img src={AdminIcon} alt="Admin" className="avatar-img" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'contain', backgroundColor: 'transparent' }} />
                             <div className="user-info">
-                                <span className="name">Admin User</span>
-                                <span className="role">Super Admin</span>
+                                <span className="name">Administrator</span>
+                                <span className="role">PSU-ACC</span>
                             </div>
                         </div>
                     </div>

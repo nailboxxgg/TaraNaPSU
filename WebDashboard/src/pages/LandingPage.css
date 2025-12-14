@@ -22,6 +22,11 @@
     color: var(--primary);
 }
 
+.nav-logo {
+    height: 40px;
+    width: auto;
+}
+
 .hero-section {
     min-height: 100vh;
     padding-top: 100px;
