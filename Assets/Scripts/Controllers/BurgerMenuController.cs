@@ -4,7 +4,7 @@ public class BurgerMenuController : MonoBehaviour
 {
     [Header("Menu References")]
     public GameObject MenuPanel;
-    public GameObject AdminLogInPanel;
+
     public GameObject SettingsPanel;
 
     private bool isMenuOpen = false;
@@ -68,14 +68,7 @@ public class BurgerMenuController : MonoBehaviour
         MenuPanel.SetActive(false);
     }
 
-    public void OpenAdminLogInPanel()
-    {
-        Debug.Log("Opening Admin Mode...");
-        CloseMenu();
 
-        if (AdminLogInPanel != null)
-            AdminLogInPanel.SetActive(true);
-    }
 
     public void OpenAbout()
     {
