@@ -6,6 +6,7 @@ using UnityEngine;
 /// <summary>
 /// Manages anchor and stair metadata loaded from AnchorData.json.
 /// Provides lookup and helper methods for navigation and QR logic.
+/// Updated to support Building Connections (Entrances/Exits).
 /// </summary>
 public class AnchorManager : MonoBehaviour
 {
@@ -13,8 +14,9 @@ public class AnchorManager : MonoBehaviour
 
     [Header("Anchor Data")]
     public TextAsset anchorDataFile;  // Optional manual override (else loads from Resources)
-    public List<AnchorData> Anchors= new List<AnchorData>();
+    public List<AnchorData> Anchors = new List<AnchorData>();
     public List<StairPair> stairPairs = new List<StairPair>();
+    public List<BuildingConnection> connections = new List<BuildingConnection>();
 
     void Awake()
     {
@@ -65,6 +67,7 @@ public class AnchorManager : MonoBehaviour
             }
 
             BuildStairPairs();
+            BuildConnections();
         }
         catch (Exception ex)
         {
@@ -109,6 +112,35 @@ public class AnchorManager : MonoBehaviour
         Debug.Log($"[AnchorManager] Linked {stairPairs.Count} stair pairs.");
     }
 
+    private void BuildConnections()
+    {
+        connections.Clear();
+
+        // Find all anchors tagged as "entrance" or "connector"
+        var looseConnectors = Anchors.Where(a => 
+            a.Type.ToLower() == "entrance" || 
+            a.Type.ToLower() == "connector").ToList();
+
+        // Group them by AnchorId. We assume a pair of connectors (one on each side) share the EXACT same ID.
+        // Example: "MainGate-To-B1" exists in Building "Campus" AND Building "B1".
+        foreach (var group in looseConnectors.GroupBy(a => a.AnchorId))
+        {
+            var pair = group.ToList();
+            if (pair.Count >= 2)
+            {
+                // We found a link!
+                connections.Add(new BuildingConnection
+                {
+                    NodeA = pair[0],
+                    NodeB = pair[1]
+                });
+                Debug.Log($"[AnchorManager] 🔗 Linked Buildings: {pair[0].BuildingId} <-> {pair[1].BuildingId} via {pair[0].AnchorId}");
+            }
+        }
+
+        Debug.Log($"[AnchorManager] Built {connections.Count} building connections.");
+    }
+
     // --------------------------------------------------------------------
     // 🔍 Public API
     // --------------------------------------------------------------------
@@ -141,6 +173,39 @@ public class AnchorManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the best connector to go from currentBuilding -> targetBuilding.
+    /// </summary>
+    public BuildingConnection FindBestConnector(string currentBuilding, string targetBuilding, Vector3 currentPos)
+    {
+        // Find connections that have one node in Start and one node in Target
+        var candidates = connections.Where(c => 
+            (c.NodeA.BuildingId == currentBuilding && c.NodeB.BuildingId == targetBuilding) ||
+            (c.NodeB.BuildingId == currentBuilding && c.NodeA.BuildingId == targetBuilding)
+        ).ToList();
+
+        if (candidates.Count == 0) return null;
+
+        // Find nearest based on distance to the "Entry" node
+        BuildingConnection best = null;
+        float bestDist = float.MaxValue;
+
+        foreach (var conn in candidates)
+        {
+            // Determine which node is the "Entry" (on our side)
+            var entryNode = (conn.NodeA.BuildingId == currentBuilding) ? conn.NodeA : conn.NodeB;
+            
+            float d = Vector3.Distance(currentPos, entryNode.PositionVector);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = conn;
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>
     /// Returns all anchors for a building and floor.
     /// </summary>
     public List<AnchorData> GetAnchors(string buildingId, int floor)
@@ -169,8 +234,8 @@ public class AnchorManager : MonoBehaviour
     [Serializable]
     public class AnchorData
     {
-        public string Type;        // "anchor", "stair", "entrance", etc.
-        public string BuildingId;  // e.g., "B1"
+        public string Type;        // "anchor", "stair", "entrance", "connector"
+        public string BuildingId;  // e.g., "B1", "Campus"
         public string AnchorId;    // e.g., "B1-Stair-North-Up"
         public int Floor;          // e.g., 0 or 1
         public Vector3Serializable Position;
@@ -189,6 +254,15 @@ public class AnchorManager : MonoBehaviour
         public AnchorData Top;
 
         public bool IsValid => Bottom != null && Top != null;
+    }
+
+    [Serializable]
+    public class BuildingConnection
+    {
+        public AnchorData NodeA;
+        public AnchorData NodeB;
+
+        public string Id => NodeA != null ? NodeA.AnchorId : "?";
     }
 
     [System.Serializable]
