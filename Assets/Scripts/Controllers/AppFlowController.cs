@@ -48,6 +48,11 @@ public class AppFlowController : MonoBehaviour
         }
     }
 
+    // State for multi-floor navigation
+    private bool isWaitingForFloorChange = false;
+    private string finalDestinationName;
+    private AnchorManager.StairPair pendingStairPair;
+
     public void ShowNavigationPanel(string targetName)
     {
         if (UITransitionManager.Instance != null)
@@ -60,18 +65,113 @@ public class AppFlowController : MonoBehaviour
         }
 
         selectedTargetName = targetName;
-        isNavigating = true; // Mark navigation as active
+        
+        // Check for multi-floor requirement
+        if (!CheckMultiFloorNavigation(targetName))
+        {
+            // Standard Navigation
+            if (navigationController != null)
+                navigationController.BeginNavigation(currentAnchor, targetName);
+        }
+    }
+
+    private bool CheckMultiFloorNavigation(string targetName)
+    {
+        // Safety check
+        if (currentAnchor == null) return false;
+        
+        // Get target data
+        if (!TargetManager.Instance.TryGetTarget(targetName, out var targetData))
+            return false;
+
+        // If on same floor, standard navigation
+        if (currentAnchor.Floor == targetData.FloorNumber)
+            return false;
+
+        Debug.Log($"[AppFlow] Multi-floor detected: Anchor F{currentAnchor.Floor} -> Target F{targetData.FloorNumber}");
+
+        // Find nearest stair
+        var stairPair = AnchorManager.Instance.FindNearestStair(
+            currentAnchor.BuildingId, 
+            currentAnchor.Floor, 
+            targetData.FloorNumber, 
+            currentAnchor.PositionVector
+        );
+
+        if (stairPair == null)
+        {
+            Debug.LogError("❌ No stair pair found for this floor transition!");
+            return false; // Fallback to standard (will likely fail pathing but keeps app running)
+        }
+
+        // Start Navigation to the specific Stair Anchor (Bottom/Start of stair)
+        // If we are going UP (0->1), dest is Bottom. If DOWN (1->0), dest is Top.
+        // Based on AnchorManager, 'Bottom' is Floor 0, 'Top' is Floor 1.
+        var intermediateStair = (currentAnchor.Floor < targetData.FloorNumber) ? stairPair.Bottom : stairPair.Top;
+        
+        // AUTOMATED FLOW: Route user to the nearest stairway marker.
+        // They do NOT need to scan this stair marker; it is just a navigation waypoint.
+        // Once they arrive here, OnStairArrived triggers the floor change prompt.
+        Debug.Log($"[AppFlow] Routing to intermediate stair: {intermediateStair.AnchorId}");
+
+        pendingStairPair = stairPair;
+        finalDestinationName = targetName;
 
         if (navigationController != null)
-            navigationController.BeginNavigation(currentAnchor, targetName);
+        {
+            // Subscribe to arrival
+            navigationController.OnArrival -= OnStairArrived; // Ensure no double sub
+            navigationController.OnArrival += OnStairArrived;
+            
+            navigationController.BeginNavigation(currentAnchor, intermediateStair);
+        }
 
+        return true;
+    }
+
+    private void OnStairArrived()
+    {
+        // Unsubscribe
+        if (navigationController != null)
+            navigationController.OnArrival -= OnStairArrived;
+
+        Debug.Log("✅ Arrived at stair. Prompting user to change floors.");
+
+        // Visual Feedback: Show prompt (using navigation monitor if available, or just console/overlay)
+        // For now, we utilize the status controller text via NavigationController
+        if (NavigationController.Instance.statusController != null)
+        {
+            NavigationController.Instance.statusController.SetNavigationInfo("FLOOR TRANSFER", "Go Upstairs -> Scan 1st Floor QR");
+        }
+
+        // Logic: Enable scanner or prompt user to open it?
+        // User request: "system prompts the user to go upstairs first and then they will see a new QR code"
+        // We should switch to Scan Mode but keep context
+        isWaitingForFloorChange = true;
+        
+        // Optionally switch back to QR panel UI after a short delay or immediately
+        // ShowQRCodePanel(); // This might be too abrupt. 
+        // Let's explicitly overlay a "Scan Next Floor" message or just transition:
+        // Ideally we show a UI Modal. Lacking that, we go to QR Panel with a specific "Scanning for Floor 1..." message.
+        
+        // Slight delay to read "Arrived" then switch
+        StartCoroutine(SwitchToScanForFloorChange());
+    }
+
+    private System.Collections.IEnumerator SwitchToScanForFloorChange()
+    {
+        yield return new WaitForSeconds(2.0f);
+        ShowQRCodePanel();
+        if (qrUI != null)
+        {
+            qrUI.titleText.text = "Floor Transition";
+            qrUI.subtitleText.text = "Go upstairs & scan marker";
+        }
     }
 
     // ---------- CALLED FROM OTHER SCRIPTS ----------
- // stores last scanned anchor
-    private bool isNavigating = false; // Track if navigation is active
-
-// ---------- QR Payload Class ----------
+ 
+    // ---------- QR Payload Class ----------
     [System.Serializable]
     public class QRPayload
     {
@@ -80,8 +180,6 @@ public class AppFlowController : MonoBehaviour
         public string anchorId;
         public int floor;
     }
-
-
 
     public void OnDestinationSelected(string targetName)
     {
@@ -94,8 +192,7 @@ public class AppFlowController : MonoBehaviour
         Debug.Log($"📷 QR scanned: {qrResult}");
 
         // Try to parse JSON
-        QRPayload payload;
-
+        QRPayload payload = null;
         try
         {
             payload = JsonUtility.FromJson<QRPayload>(qrResult);
@@ -113,7 +210,9 @@ public class AppFlowController : MonoBehaviour
         }
 
         // Find anchor in AnchorManager
-        currentAnchor = AnchorManager.Instance.FindAnchor(payload.anchorId);
+        string lookupId = payload.anchorId != null ? payload.anchorId.Trim() : "";
+        Debug.Log($"[AppFlowController] Looking up anchor: '{lookupId}' (Original: '{payload.anchorId}')");
+        currentAnchor = AnchorManager.Instance.FindAnchor(lookupId);
 
         if (currentAnchor == null)
         {
@@ -121,34 +220,45 @@ public class AppFlowController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"✅ QR Recenter: User position updated to {currentAnchor.AnchorId}");
+        Debug.Log($"✅ Anchor Scanned: {currentAnchor.AnchorId}");
 
-        // Check if user is currently navigating
-        if (isNavigating && !string.IsNullOrEmpty(selectedTargetName))
+        // HANDLE MULTI-FLOOR TRANSITION SCAN
+        if (isWaitingForFloorChange)
         {
-            Debug.Log($"🔄 Recentering active navigation to new anchor position");
-
-            // Update navigation with new anchor while keeping same target
-            if (NavigationController.Instance != null)
-                NavigationController.Instance.RecenterNavigation(currentAnchor, selectedTargetName);
-
-            return;
+            // Verify this is the correct next-floor anchor
+            // We expect the anchor to be on the target floor of the original request
+            if (TargetManager.Instance.TryGetTarget(finalDestinationName, out var targetData))
+            {
+                if (currentAnchor.Floor == targetData.FloorNumber)
+                {
+                    Debug.Log("✅ Floor transition confirmed! Resuming navigation...");
+                    isWaitingForFloorChange = false;
+                    
+                    // Resume to final target
+                    ShowNavigationPanel(finalDestinationName);
+                    // BeginNavigation will warp to the new currentAnchor automatically
+                    // Note: BeginNavigation(currentAnchor, finalDestinationName) handles the request.
+                    return; 
+                }
+                else
+                {
+                    Debug.LogWarning($"⚠️ Wrong floor scanned. Expected Floor {targetData.FloorNumber}, got {currentAnchor.Floor}");
+                    if (qrUI != null) qrUI.subtitleText.text = "Wrong floor! Go to Floor " + targetData.FloorNumber;
+                    return;
+                }
+            }
         }
 
-        // Must have selected a target BEFORE scanning for initial navigation
+        // Must have selected a target BEFORE scanning (Standard Flow)
         if (string.IsNullOrEmpty(selectedTargetName))
         {
-            Debug.Log("ℹ️ QR scanned but no destination selected - anchor saved for future navigation");
+            Debug.LogWarning("⚠️ User has not selected a destination yet.");
             return;
         }
 
         // Switch to navigation panel
         ShowNavigationPanel(selectedTargetName);
-
-        // Begin navigation from new anchor position
-        if (NavigationController.Instance != null)
-            NavigationController.Instance.BeginNavigation(currentAnchor, selectedTargetName);
-    }
+    } // End of OnQRCodeScanned
 
 
     public void StopNavigation()
@@ -156,12 +266,11 @@ public class AppFlowController : MonoBehaviour
         if (navigationController !=null)
         {
             NavigationPanel.SetActive(false);
-            navigationController.StopNavigation();
+            navigationController.EndNavigation();
         }
 
         // Reset all navigation state to fresh start
         ResetNavigationState();
-        isNavigating = false; // Mark navigation as inactive
 
         ShowWelcome();
     }
@@ -175,7 +284,6 @@ public class AppFlowController : MonoBehaviour
 
         // Reset all navigation state to fresh start
         ResetNavigationState();
-        isNavigating = false; // Mark navigation as inactive
 
         ShowQRCodePanel();
     }
