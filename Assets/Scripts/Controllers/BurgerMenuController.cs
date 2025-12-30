@@ -3,7 +3,6 @@ using UnityEngine;
 public class BurgerMenuController : MonoBehaviour
 {
     [Header("Menu References")]
-    [Header("Menu References")]
     public GameObject MenuPanel;
 
     private bool isMenuOpen = false;

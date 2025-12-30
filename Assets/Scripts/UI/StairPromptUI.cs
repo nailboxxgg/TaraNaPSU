@@ -30,9 +30,6 @@ public class StairPromptUI : MonoBehaviour
             canvasGroup = GetComponent<CanvasGroup>();
     }
 
-    
-    
-    
     public void ShowMessage(string message, float duration = -1f)
     {
         if (messageText == null || canvasGroup == null) return;
@@ -44,9 +41,6 @@ public class StairPromptUI : MonoBehaviour
         currentRoutine = StartCoroutine(ShowRoutine(duration > 0 ? duration : autoHideDelay));
     }
 
-    
-    
-    
     public void HideMessage()
     {
         if (currentRoutine != null)
@@ -87,4 +81,3 @@ public class StairPromptUI : MonoBehaviour
         canvasGroup.alpha = 0;
     }
 }
-

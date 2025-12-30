@@ -17,8 +17,6 @@ public class SearchBarQR : MonoBehaviour
     public RectTransform suggestionsContainer;
     public GameObject suggestionItemPrefab;
 
-
-
     private List<string> allTargets = new();
     private List<GameObject> activeSuggestions = new();
 
@@ -86,7 +84,6 @@ public class SearchBarQR : MonoBehaviour
         AppFlowController.Instance.OnDestinationSelected(name);
     }
 
-
     private void OnSearchSubmitted(string text)
     {
         suggestionPanel.gameObject.SetActive(false);
@@ -104,15 +101,9 @@ public class SearchBarQR : MonoBehaviour
 
     public void ClearSelection()
     {
-        
         searchInputField.text = "";
-
-        
         ClearSuggestions();
         suggestionPanel.gameObject.SetActive(false);
-
-        
         searchInputField.DeactivateInputField();
     }
 }
-

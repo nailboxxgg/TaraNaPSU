@@ -1,88 +1,102 @@
 using System;
 using System.Collections;
+using Unity.Collections;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
+using UnityEngine.XR.ARSubsystems;
 using ZXing;
 
-[RequireComponent(typeof(RawImage))]
 public class ZXingScannerController : MonoBehaviour
 {
-    public RawImage cameraPreview;
-    public float scanInterval = 0.15f;
-    private WebCamTexture camTexture;
+    [Header("AR Configuration")]
+    [SerializeField]
+    private ARCameraManager arCameraManager;
+
+    [Header("Scanner Settings")]
+    public float scanInterval = 0.5f;
+
     private IBarcodeReader reader;
-    private Coroutine scanRoutine;
+    private bool isScanning = false;
+    private float nextScanTime = 0;
 
     public event Action<string> OnQRFound;
 
     private void Awake()
     {
-        reader = new BarcodeReader { AutoRotate = true };
+        reader = new BarcodeReader 
+        { 
+            AutoRotate = true, 
+            Options = new ZXing.Common.DecodingOptions { TryHarder = true } 
+        };
+    }
+
+    private void Update()
+    {
+        if (!isScanning) return;
+        if (Time.time < nextScanTime) return;
+
+        if (arCameraManager == null)
+            arCameraManager = FindObjectOfType<ARCameraManager>();
+
+        if (arCameraManager != null)
+        {
+            ScanFrame();
+            nextScanTime = Time.time + scanInterval;
+        }
     }
 
     public void StartScanner()
     {
-        if (camTexture != null) return;
-        var devices = WebCamTexture.devices;
-        if (devices.Length == 0)
-        {
-            Debug.LogError("No camera found!");
-            return;
-        }
-
-        camTexture = new WebCamTexture(devices[0].name);
-        cameraPreview.texture = camTexture;
-
-        
-        RectTransform previewRect = cameraPreview.GetComponent<RectTransform>();
-
-        
-        #if UNITY_ANDROID || UNITY_IOS
-            
-            previewRect.rotation = Quaternion.Euler(0, 0, -90);
-        #else
-            
-            previewRect.rotation = Quaternion.Euler(0, 0, camTexture.videoRotationAngle);
-        #endif
-
-        
-        if (camTexture.videoVerticallyMirrored)
-        {
-            cameraPreview.uvRect = new Rect(1, 0, -1, 1);
-        }
-
-        camTexture.Play();
-        scanRoutine = StartCoroutine(ScanLoop());
+        isScanning = true;
+        Debug.Log("AR QR Scanner started.");
     }
 
     public void StopScanner()
     {
-        if (scanRoutine != null) StopCoroutine(scanRoutine);
-        if (camTexture != null)
-        {
-            camTexture.Stop();
-            camTexture = null;
-        }
+        isScanning = false;
+        Debug.Log("AR QR Scanner stopped.");
     }
 
-    private IEnumerator ScanLoop()
+    private void ScanFrame()
     {
-        yield return new WaitForSeconds(0.5f);
-        while (camTexture != null && camTexture.isPlaying)
+        if (!arCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
         {
-            try
+            return;
+        }
+
+        var conversionParams = new XRCpuImage.ConversionParams
+        {
+            inputRect = new RectInt(0, 0, image.width, image.height),
+            outputDimensions = new Vector2Int(image.width, image.height),
+            outputFormat = TextureFormat.R8,
+            transformation = XRCpuImage.Transformation.None
+        };
+
+        int size = image.GetConvertedDataSize(conversionParams);
+        var buffer = new NativeArray<byte>(size, Allocator.Temp);
+
+        try
+        {
+            image.Convert(conversionParams, buffer);
+            
+            byte[] pixelData = buffer.ToArray();
+
+            var result = reader.Decode(pixelData, image.width, image.height, RGBLuminanceSource.BitmapFormat.Gray8);
+
+            if (result != null)
             {
-                var pixels = camTexture.GetPixels32();
-                var result = reader.Decode(pixels, camTexture.width, camTexture.height);
-                if (result != null)
-                {
-                    Debug.Log("QR Found: " + result.Text);
-                    OnQRFound?.Invoke(result.Text);
-                }
+                Debug.Log($"QR Found: {result.Text}");
+                OnQRFound?.Invoke(result.Text);
             }
-            catch { }
-            yield return new WaitForSeconds(scanInterval);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"QR Scan Error: {ex.Message}");
+        }
+        finally
+        {
+            buffer.Dispose();
+            image.Dispose();
         }
     }
 }
-

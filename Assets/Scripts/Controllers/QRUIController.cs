@@ -2,8 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-
-
 public class QRUIController : MonoBehaviour
 {
     [Header("QR UI Elements")]
@@ -39,15 +37,12 @@ public class QRUIController : MonoBehaviour
 
     public void ResetScannerUI()
     {
-        
         if (scanner != null)
         {
             scanner.StopScanner();
         }
 
-        
         titleText.text = "Scan QR Code";
         subtitleText.text = "Position yourself at a QR anchor";
     }
 }
-

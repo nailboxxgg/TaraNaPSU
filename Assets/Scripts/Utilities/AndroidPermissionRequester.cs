@@ -1,13 +1,14 @@
 using UnityEngine;
+using UnityEngine.Android;
 
 public static class AndroidPermissionRequester
 {
 #if UNITY_ANDROID && !UNITY_EDITOR
     public static void RequestCameraPermission()
     {
-        if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission("android.permission.CAMERA"))
+        if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
         {
-            UnityEngine.Android.Permission.RequestUserPermission("android.permission.CAMERA");
+            Permission.RequestUserPermission(Permission.Camera);
         }
     }
 #else

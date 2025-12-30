@@ -17,7 +17,7 @@ public class TargetManager : MonoBehaviour
         }
 
         Instance = this;
-            DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject);
         LoadTargets();
     }
 
@@ -30,7 +30,6 @@ public class TargetManager : MonoBehaviour
             return;
         }
 
-        
         var wrapper = JsonUtility.FromJson<TargetListWrapper>(json.text);
         if (wrapper != null && wrapper.TargetList != null)
         {
@@ -50,4 +49,3 @@ public class TargetManager : MonoBehaviour
     public List<string> GetAllTargetNames() => new List<string>(targets.Keys);
     public bool TryGetTarget(string name, out TargetData data) => targets.TryGetValue(name, out data);
 }
-

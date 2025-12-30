@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(LineRenderer))]
+[RequireComponent(typeof(NavMeshAgent))]
 public class NavigationController : MonoBehaviour
 {
     public static NavigationController Instance { get; private set; }
@@ -36,18 +37,12 @@ public class NavigationController : MonoBehaviour
     void Update()
     {
         if (target == null || agent == null) return;
-
-        
         if (hasArrived) return;
 
-        
         NavMesh.CalculatePath(agent.transform.position, target.position, NavMesh.AllAreas, navPath);
         DrawPath();
-
-        
         agent.SetDestination(target.position);
 
-        
         if (!agent.pathPending && agent.remainingDistance <= arriveDistance && !hasArrived)
         {
             OnArrived();
@@ -72,36 +67,29 @@ public class NavigationController : MonoBehaviour
         }
     }
 
-    
     public event System.Action OnArrival;
 
-    
     private void OnArrived()
     {
         Debug.Log("✅ Arrived at destination!");
         lineRenderer.positionCount = 0;
 
-        
         if (statusController != null)
         {
             statusController.OnArrived();
         }
-
         OnArrival?.Invoke();
     }
 
-    
     public void SetDestination(Transform dest)
     {
         target = dest;
     }
 
-    
     public void BeginNavigation(AnchorData startAnchor, AnchorData destAnchor)
     {
         if (destAnchor == null) return;
 
-        
         GameObject targetObj = GameObject.Find(destAnchor.AnchorId);
         if (targetObj == null)
         {
@@ -109,23 +97,16 @@ public class NavigationController : MonoBehaviour
             targetObj.transform.position = destAnchor.Position.ToVector3();
             targetObj.transform.rotation = Quaternion.Euler(destAnchor.Rotation.ToVector3());
         }
-
-        
         WarpToAnchor(startAnchor);
 
-        
         if (statusController != null)
         {
             statusController.SetNavigationInfo("Navigation", "Go to " + destAnchor.Meta);
         }
-
-        
         HideAllTargets();
         if (targetObj != null) targetObj.SetActive(true);
 
-        
         SetDestination(targetObj.transform);
-        
         hasArrived = false;
         if (agent != null) agent.isStopped = false;
 
@@ -140,14 +121,12 @@ public class NavigationController : MonoBehaviour
             return;
         }
 
-        
         if (!TargetManager.Instance.TryGetTarget(targetName, out var targetData))
         {
             Debug.LogWarning($"No target data found for: {targetName}");
             return;
         }
 
-        
         GameObject targetObj = GameObject.Find(targetData.Name);
         if (targetObj == null)
         {
@@ -155,11 +134,8 @@ public class NavigationController : MonoBehaviour
             targetObj.transform.position = targetData.Position.ToVector3();
             targetObj.transform.rotation = Quaternion.Euler(targetData.Rotation.ToVector3());
         }
-
-        
         WarpToAnchor(startAnchor);
 
-        
         string buildingName = targetName;
         string destinationName = targetName;
 
@@ -173,23 +149,18 @@ public class NavigationController : MonoBehaviour
             }
         }
 
-        
         if (statusController != null)
         {
             statusController.SetNavigationInfo(buildingName, destinationName);
         }
 
-        
         HideAllTargets();
         if (targetObj != null) 
         {
             targetObj.SetActive(true);
         }
 
-        
         SetDestination(targetObj.transform);
-        
-        
         hasArrived = false;
         if (agent != null) agent.isStopped = false;
 
@@ -222,10 +193,8 @@ public class NavigationController : MonoBehaviour
 
     private void WarpToAnchor(AnchorData startAnchor)
     {
-        
         if (startAnchor != null)
         {
-            
             if (agent == null) agent = GetComponent<NavMeshAgent>();
 
             if (agent != null)
@@ -239,7 +208,6 @@ public class NavigationController : MonoBehaviour
                 }
                 else
                 {
-                   
                     Debug.LogWarning($"⚠️ No valid NavMesh found within 5m of anchor {anchorPos}. Check if NavMesh is baked at this floor.");
                 }
             }
@@ -252,26 +220,18 @@ public class NavigationController : MonoBehaviour
 
     public void EndNavigation()
     {
-        
         if (agent != null)
         {
             agent.isStopped = true;
             agent.ResetPath();
         }
-
-        
         target = null;
 
-        
         if (lineRenderer != null)
         {
             lineRenderer.positionCount = 0;
         }
-
-        
         navPath = new NavMeshPath();
-
-        
         hasArrived = false;
 
         Debug.Log("🛑 Navigation terminated");

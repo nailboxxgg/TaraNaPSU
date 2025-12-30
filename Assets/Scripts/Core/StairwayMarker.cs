@@ -1,7 +1,7 @@
 using UnityEngine;
 
-public class StairwayMarker : MonoBehaviour {
-    
+public class StairwayMarker : MonoBehaviour 
+{
     [Header("Floor Connection")]
     [Tooltip("Which floor does this stair start from?")]
     public int fromFloor = 0;
@@ -17,8 +17,10 @@ public class StairwayMarker : MonoBehaviour {
     public bool showGizmo = true;
     public Color gizmoColor = Color.yellow;
 
-    public bool ConnectsFloors(int floor1, int floor2) {
-        if (isBidirectional) {
+    public bool ConnectsFloors(int floor1, int floor2) 
+    {
+        if (isBidirectional) 
+        {
             return (fromFloor == floor1 && toFloor == floor2) || 
                    (fromFloor == floor2 && toFloor == floor1);
         } else {
@@ -26,8 +28,10 @@ public class StairwayMarker : MonoBehaviour {
         }
     }
 
-    public int GetDestinationFloor(int currentFloor) {
-        if (currentFloor == fromFloor) {
+    public int GetDestinationFloor(int currentFloor) 
+    {
+        if (currentFloor == fromFloor) 
+        {
             return toFloor;
         } else if (isBidirectional && currentFloor == toFloor) {
             return fromFloor;
@@ -35,7 +39,8 @@ public class StairwayMarker : MonoBehaviour {
         return -1; 
     }
 
-    private void OnDrawGizmos() {
+    private void OnDrawGizmos() 
+    {
         if (!showGizmo) return;
 
         Gizmos.color = gizmoColor;
@@ -52,7 +57,8 @@ public class StairwayMarker : MonoBehaviour {
         #endif
     }
 
-    private void OnDrawGizmosSelected() {
+    private void OnDrawGizmosSelected() 
+    {
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, 1f);
     }

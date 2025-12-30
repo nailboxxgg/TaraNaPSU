@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-
-
-
-
 [Serializable]
 public class Vector3Serializable
 {
@@ -85,4 +81,3 @@ public class QRPayload
     public string anchorId;
     public int floor;
 }
-
