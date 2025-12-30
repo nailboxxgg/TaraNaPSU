@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BurgerMenuController : MonoBehaviour
+public class SettingsController : MonoBehaviour
 {
     [Header("Menu References")]
     public GameObject MenuPanel;
