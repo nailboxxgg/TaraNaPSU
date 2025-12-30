@@ -3,8 +3,8 @@ using UnityEngine;
 public class BurgerMenuController : MonoBehaviour
 {
     [Header("Menu References")]
+    [Header("Menu References")]
     public GameObject MenuPanel;
-    public GameObject AdminLogInPanel;
 
     private bool isMenuOpen = false;
 
@@ -20,15 +20,6 @@ public class BurgerMenuController : MonoBehaviour
         MenuPanel.SetActive(false);
     }
 
-    public void OpenAdminLogInPanel()
-    {
-        Debug.Log("Opening Admin Mode...");
-        CloseMenu();
-
-        if (AdminLogInPanel != null)
-            AdminLogInPanel.SetActive(true);
-    }
-
     public void OpenAbout()
     {
         Debug.Log("About panel coming soon...");
@@ -39,3 +30,4 @@ public class BurgerMenuController : MonoBehaviour
         Debug.Log("Settings panel coming soon...");
     }
 }
+

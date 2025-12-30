@@ -9,3 +9,4 @@ public class ToggleVisibility : MonoBehaviour {
         toggleObject.SetActive(!toggleObject.activeSelf);
     }
 }
+

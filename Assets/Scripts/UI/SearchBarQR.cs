@@ -17,9 +17,7 @@ public class SearchBarQR : MonoBehaviour
     public RectTransform suggestionsContainer;
     public GameObject suggestionItemPrefab;
 
-    [Header("Movement Target")]
-    public Transform player; // XR Origin or Main Camera
-    public float moveSpeed = 3f;
+
 
     private List<string> allTargets = new();
     private List<GameObject> activeSuggestions = new();
@@ -92,46 +90,29 @@ public class SearchBarQR : MonoBehaviour
     private void OnSearchSubmitted(string text)
     {
         suggestionPanel.gameObject.SetActive(false);
-        MoveToTarget(text);
-    }
-
-    private void MoveToTarget(string name)
-    {
-        if (!TargetManager.Instance.TryGetTarget(name, out var target))
+        
+        if (AppFlowController.Instance != null && !string.IsNullOrEmpty(text))
         {
-            Debug.Log($"❌ Target not found: {name}");
-            return;
+            AppFlowController.Instance.OnDestinationSelected(text);
+            AppFlowController.Instance.ShowNavigationPanel(text);
         }
-
-        StartCoroutine(SmoothMove(player, target.Position.ToVector3(),
-                                  Quaternion.Euler(target.Rotation.ToVector3())));
-    }
-
-    private IEnumerator SmoothMove(Transform obj, Vector3 endPos, Quaternion endRot)
-    {
-        Vector3 startPos = obj.position;
-        Quaternion startRot = obj.rotation;
-        float t = 0f;
-
-        while (t < 1f)
+        else
         {
-            t += Time.deltaTime * moveSpeed;
-            obj.position = Vector3.Lerp(startPos, endPos, t);
-            obj.rotation = Quaternion.Slerp(startRot, endRot, t);
-            yield return null;
+            Debug.LogWarning("AppFlowController instance not found or invalid text.");
         }
     }
 
     public void ClearSelection()
     {
-        // Clear the input field text
+        
         searchInputField.text = "";
 
-        // Clear any active suggestions
+        
         ClearSuggestions();
         suggestionPanel.gameObject.SetActive(false);
 
-        // Remove focus from input field
+        
         searchInputField.DeactivateInputField();
     }
 }
+

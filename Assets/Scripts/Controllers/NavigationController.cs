@@ -8,10 +8,10 @@ public class NavigationController : MonoBehaviour
     public static NavigationController Instance { get; private set; }
 
     [Header("References")]
-    public NavMeshAgent agent;          // assign Player's NavMeshAgent
-    public Transform target;            // destination Transform
-    public LineRenderer lineRenderer;   // path visualization
-    public NavigationStatusController statusController; // Navigation status UI
+    public NavMeshAgent agent;          
+    public Transform target;            
+    public LineRenderer lineRenderer;   
+    public NavigationStatusController statusController; 
 
     [Header("Visuals")]
     public float lineHeightOffset = 0.1f;
@@ -37,17 +37,17 @@ public class NavigationController : MonoBehaviour
     {
         if (target == null || agent == null) return;
 
-        // Don't update if already arrived
+        
         if (hasArrived) return;
 
-        // Update NavMesh path
+        
         NavMesh.CalculatePath(agent.transform.position, target.position, NavMesh.AllAreas, navPath);
         DrawPath();
 
-        // Move agent toward destination
+        
         agent.SetDestination(target.position);
 
-        // Check arrival - only call once
+        
         if (!agent.pathPending && agent.remainingDistance <= arriveDistance && !hasArrived)
         {
             OnArrived();
@@ -72,16 +72,16 @@ public class NavigationController : MonoBehaviour
         }
     }
 
-    // Event for other scripts to listen for arrival
+    
     public event System.Action OnArrival;
 
-    // ✅ This method must exist to clear the error CS0103
+    
     private void OnArrived()
     {
         Debug.Log("✅ Arrived at destination!");
         lineRenderer.positionCount = 0;
 
-        // Update navigation status UI
+        
         if (statusController != null)
         {
             statusController.OnArrived();
@@ -90,18 +90,18 @@ public class NavigationController : MonoBehaviour
         OnArrival?.Invoke();
     }
 
-    // ✅ This method must exist before BeginNavigation()
+    
     public void SetDestination(Transform dest)
     {
         target = dest;
     }
 
-    // ✅ Overload for navigating to an Anchor (Intermediate Stair)
-    public void BeginNavigation(AnchorManager.AnchorData startAnchor, AnchorManager.AnchorData destAnchor)
+    
+    public void BeginNavigation(AnchorData startAnchor, AnchorData destAnchor)
     {
         if (destAnchor == null) return;
 
-        // Create or find a temp object for the destination
+        
         GameObject targetObj = GameObject.Find(destAnchor.AnchorId);
         if (targetObj == null)
         {
@@ -110,29 +110,29 @@ public class NavigationController : MonoBehaviour
             targetObj.transform.rotation = Quaternion.Euler(destAnchor.Rotation.ToVector3());
         }
 
-        // Warp agent to start anchor if provided
+        
         WarpToAnchor(startAnchor);
 
-        // Update UI
+        
         if (statusController != null)
         {
             statusController.SetNavigationInfo("Navigation", "Go to " + destAnchor.Meta);
         }
 
-        // HIDE ALL OTHER TARGETS & SHOW CURRENT ONE
+        
         HideAllTargets();
         if (targetObj != null) targetObj.SetActive(true);
 
-        // Start Moving
+        
         SetDestination(targetObj.transform);
-        // Reset arrival state
+        
         hasArrived = false;
         if (agent != null) agent.isStopped = false;
 
         Debug.Log($"🚀 Navigation started to Anchor: {destAnchor.AnchorId}");
     }
 
-    public void BeginNavigation(AnchorManager.AnchorData startAnchor, string targetName)
+    public void BeginNavigation(AnchorData startAnchor, string targetName)
     {
         if (string.IsNullOrEmpty(targetName))
         {
@@ -140,14 +140,14 @@ public class NavigationController : MonoBehaviour
             return;
         }
 
-        // Try to find target in TargetManager
+        
         if (!TargetManager.Instance.TryGetTarget(targetName, out var targetData))
         {
             Debug.LogWarning($"No target data found for: {targetName}");
             return;
         }
 
-        // Find or create a target marker in the scene
+        
         GameObject targetObj = GameObject.Find(targetData.Name);
         if (targetObj == null)
         {
@@ -156,10 +156,10 @@ public class NavigationController : MonoBehaviour
             targetObj.transform.rotation = Quaternion.Euler(targetData.Rotation.ToVector3());
         }
 
-        // Warp if needed
+        
         WarpToAnchor(startAnchor);
 
-        // Extract building information from target name (e.g., "B1-Quality Assurance Office")
+        
         string buildingName = targetName;
         string destinationName = targetName;
 
@@ -173,23 +173,23 @@ public class NavigationController : MonoBehaviour
             }
         }
 
-        // Update navigation status UI
+        
         if (statusController != null)
         {
             statusController.SetNavigationInfo(buildingName, destinationName);
         }
 
-        // HIDE ALL OTHER TARGETS & SHOW CURRENT ONE
+        
         HideAllTargets();
         if (targetObj != null) 
         {
             targetObj.SetActive(true);
         }
 
-        // Set destination and begin navigating
+        
         SetDestination(targetObj.transform);
         
-        // Reset arrival state
+        
         hasArrived = false;
         if (agent != null) agent.isStopped = false;
 
@@ -208,7 +208,7 @@ public class NavigationController : MonoBehaviour
                     obj.SetActive(false);
                 }
             }
-            // Also hide Anchors/Stairs that might be active markers
+            
             if (AnchorManager.Instance != null)
             {
                 foreach (var anchor in AnchorManager.Instance.Anchors)
@@ -220,12 +220,12 @@ public class NavigationController : MonoBehaviour
         }
     }
 
-    private void WarpToAnchor(AnchorManager.AnchorData startAnchor)
+    private void WarpToAnchor(AnchorData startAnchor)
     {
-        // If a startAnchor was provided, warp the agent there
+        
         if (startAnchor != null)
         {
-            // Auto-assign if missing
+            
             if (agent == null) agent = GetComponent<NavMeshAgent>();
 
             if (agent != null)
@@ -252,26 +252,26 @@ public class NavigationController : MonoBehaviour
 
     public void EndNavigation()
     {
-        // Stop the NavMeshAgent
+        
         if (agent != null)
         {
             agent.isStopped = true;
             agent.ResetPath();
         }
 
-        // Clear target
+        
         target = null;
 
-        // Clear visual path
+        
         if (lineRenderer != null)
         {
             lineRenderer.positionCount = 0;
         }
 
-        // Reset navPath
+        
         navPath = new NavMeshPath();
 
-        // Reset arrival state
+        
         hasArrived = false;
 
         Debug.Log("🛑 Navigation terminated");

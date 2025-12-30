@@ -2,29 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Serializable]
-public class TargetDataList
-{
-    public List<TargetData> TargetList;
-}
-
-[Serializable]
-public class TargetData
-{
-    public string Name;
-    public int FloorNumber;
-    public Vector3Serializable Position;
-    public Vector3Serializable Rotation;
-}
-
-[Serializable]
-public class Vector3Serializable
-{
-    public float x, y, z;
-
-    public Vector3 ToVector3() => new Vector3(x, y, z);
-}
-
 public class TargetManager : MonoBehaviour
 {
     public static TargetManager Instance { get; private set; }
@@ -53,16 +30,24 @@ public class TargetManager : MonoBehaviour
             return;
         }
 
-        var dataList = JsonUtility.FromJson<TargetDataList>(json.text);
-        foreach (var target in dataList.TargetList)
+        
+        var wrapper = JsonUtility.FromJson<TargetListWrapper>(json.text);
+        if (wrapper != null && wrapper.TargetList != null)
         {
-            if (!targets.ContainsKey(target.Name))
-                targets.Add(target.Name, target);
+             foreach (var target in wrapper.TargetList)
+            {
+                if (!targets.ContainsKey(target.Name))
+                    targets.Add(target.Name, target);
+            }
+            Debug.Log($"✅ Loaded {targets.Count} targets from TargetData.json");
         }
-
-        Debug.Log($"✅ Loaded {targets.Count} targets from TargetData.json");
+        else
+        {
+            Debug.LogWarning("⚠️ TargetManager: wrapper or TargetList is null.");
+        }
     }
 
     public List<string> GetAllTargetNames() => new List<string>(targets.Keys);
     public bool TryGetTarget(string name, out TargetData data) => targets.TryGetValue(name, out data);
 }
+

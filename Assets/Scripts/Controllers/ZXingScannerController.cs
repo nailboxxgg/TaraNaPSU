@@ -33,19 +33,19 @@ public class ZXingScannerController : MonoBehaviour
         camTexture = new WebCamTexture(devices[0].name);
         cameraPreview.texture = camTexture;
 
-        // Adjust camera preview orientation for portrait mode on mobile devices
+        
         RectTransform previewRect = cameraPreview.GetComponent<RectTransform>();
 
-        // On mobile devices, force the camera to portrait mode regardless of device orientation
+        
         #if UNITY_ANDROID || UNITY_IOS
-            // Force portrait orientation for mobile camera
+            
             previewRect.rotation = Quaternion.Euler(0, 0, -90);
         #else
-            // For editor and other platforms, use the automatic rotation
+            
             previewRect.rotation = Quaternion.Euler(0, 0, camTexture.videoRotationAngle);
         #endif
 
-        // Apply vertical mirroring if needed
+        
         if (camTexture.videoVerticallyMirrored)
         {
             cameraPreview.uvRect = new Rect(1, 0, -1, 1);
@@ -85,3 +85,4 @@ public class ZXingScannerController : MonoBehaviour
         }
     }
 }
+

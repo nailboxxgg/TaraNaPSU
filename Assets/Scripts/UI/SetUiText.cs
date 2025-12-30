@@ -12,3 +12,4 @@ public class SetUiText : MonoBehaviour {
         textField.text = $"{fixedText}: {numericValue}";
     }
 }
+

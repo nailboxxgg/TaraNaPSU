@@ -9,7 +9,7 @@ public class NavigationPanelController : MonoBehaviour
 
     void Start()
     {
-        // Set up button listeners
+        
         if (StopButton != null)
         {
             StopButton.onClick.AddListener(OnStopClicked);

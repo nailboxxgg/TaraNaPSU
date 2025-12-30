@@ -46,7 +46,7 @@ public class NotificationController : MonoBehaviour
 
     private IEnumerator FadeSequence()
     {
-        // Fade in
+        
         float t = 0;
         while (t < fadeDuration)
         {
@@ -57,7 +57,7 @@ public class NotificationController : MonoBehaviour
 
         yield return new WaitForSeconds(displayTime);
 
-        // Fade out
+        
         t = 0;
         while (t < fadeDuration)
         {
@@ -69,3 +69,4 @@ public class NotificationController : MonoBehaviour
         panel.SetActive(false);
     }
 }
+

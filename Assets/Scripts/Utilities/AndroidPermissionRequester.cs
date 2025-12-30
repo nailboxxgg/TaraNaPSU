@@ -14,3 +14,4 @@ public static class AndroidPermissionRequester
     public static void RequestCameraPermission() { }
 #endif
 }
+

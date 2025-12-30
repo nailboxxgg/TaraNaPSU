@@ -13,15 +13,15 @@ public class NavigationStatusController : MonoBehaviour
 
     void Start()
     {
-        // Initialize default display
+        
         StatusText.text = "Waiting for navigation...";
         BuildingText.text = "-";
         DestinationText.text = "-";
     }
 
-    // ---------------------------------------------------------
-    // 📌 Called when the app starts navigation
-    // ---------------------------------------------------------
+    
+    
+    
     public void SetNavigationInfo(string buildingId, string destinationName)
     {
         currentBuilding = buildingId;
@@ -33,17 +33,17 @@ public class NavigationStatusController : MonoBehaviour
         StatusText.text = "Status: Navigation Started";
     }
 
-    // ---------------------------------------------------------
-    // 📌 Called continuously during navigation (optional)
-    // ---------------------------------------------------------
+    
+    
+    
     public void UpdateStatus(string newStatus)
     {
         StatusText.text = $"Status: {newStatus}";
     }
 
-    // ---------------------------------------------------------
-    // 📌 Called when the user arrives
-    // ---------------------------------------------------------
+    
+    
+    
     public void OnArrived()
     {
         if (StatusText != null)
@@ -56,3 +56,4 @@ public class NavigationStatusController : MonoBehaviour
         }
     }
 }
+
