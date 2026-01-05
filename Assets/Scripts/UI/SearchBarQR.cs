@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class SearchBarQR : MonoBehaviour
 {
@@ -27,6 +28,15 @@ public class SearchBarQR : MonoBehaviour
 
         searchInputField.onValueChanged.AddListener(OnInputChanged);
         searchInputField.onSubmit.AddListener(OnSearchSubmitted);
+        
+        // Add EventTrigger for OnSelect
+        EventTrigger trigger = searchInputField.gameObject.GetComponent<EventTrigger>();
+        if (trigger == null) trigger = searchInputField.gameObject.AddComponent<EventTrigger>();
+        
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        entry.eventID = EventTriggerType.Select;
+        entry.callback.AddListener((data) => { OnInputSelected(); });
+        trigger.triggers.Add(entry);
 
         backButton.onClick.AddListener(() => Debug.Log("Back Button Pressed"));
         menuButton.onClick.AddListener(() => Debug.Log("Menu Button Pressed"));
@@ -40,13 +50,22 @@ public class SearchBarQR : MonoBehaviour
         searchInputField.onSubmit.RemoveListener(OnSearchSubmitted);
     }
 
+    private void OnInputSelected()
+    {
+        if (string.IsNullOrEmpty(searchInputField.text))
+        {
+            ShowSuggestions(allTargets);
+        }
+    }
+
     private void OnInputChanged(string text)
     {
         ClearSuggestions();
 
         if (string.IsNullOrWhiteSpace(text))
         {
-            suggestionPanel.gameObject.SetActive(false);
+            // Show all targets if text is cleared
+            ShowSuggestions(allTargets);
             return;
         }
 
@@ -59,9 +78,22 @@ public class SearchBarQR : MonoBehaviour
             return;
         }
 
+        ShowSuggestions(matches);
+    }
+
+    private void ShowSuggestions(List<string> items)
+    {
+        ClearSuggestions();
+        
+        if (items.Count == 0)
+        {
+            suggestionPanel.gameObject.SetActive(false);
+            return;
+        }
+
         suggestionPanel.gameObject.SetActive(true);
 
-        foreach (var match in matches)
+        foreach (var match in items)
         {
             var item = Instantiate(suggestionItemPrefab, suggestionsContainer);
             item.GetComponentInChildren<TMP_Text>().text = match;
