@@ -1,24 +1,22 @@
 using UnityEngine;
 
-public class SettingsController : MonoBehaviour
+public class BurgerMenuController : MonoBehaviour
 {
-    [Header("Menu References")]
-    public GameObject MenuPanel;
-
-    private bool isMenuOpen = false;
+    [Header("Settings References")]
+    public GameObject Settings;
+    private bool isSettingsOpen = false;
 
     public void ToggleMenu()
     {
-        isMenuOpen = !isMenuOpen;
-        MenuPanel.SetActive(isMenuOpen);
+        isSettingsOpen = !isSettingsOpen;
+        Settings.SetActive(isSettingsOpen);
     }
 
-    public void CloseMenu()
+    public void CloseSettings()
     {
-        isMenuOpen = false;
-        MenuPanel.SetActive(false);
+        isSettingsOpen = false;
+        Settings.SetActive(false);
     }
-
     public void OpenAbout()
     {
         Debug.Log("About panel coming soon...");
@@ -29,4 +27,3 @@ public class SettingsController : MonoBehaviour
         Debug.Log("Settings panel coming soon...");
     }
 }
-

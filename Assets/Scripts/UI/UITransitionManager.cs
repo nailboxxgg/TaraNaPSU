@@ -27,12 +27,14 @@ public class UITransitionManager : MonoBehaviour
             yield break;
         }
 
+        // Ensure CanvasGroups exist (used for alpha)
         CanvasGroup currentCg = current.GetComponent<CanvasGroup>();
         if (currentCg == null) currentCg = current.AddComponent<CanvasGroup>();
 
         CanvasGroup nextCg = next.GetComponent<CanvasGroup>();
         if (nextCg == null) nextCg = next.AddComponent<CanvasGroup>();
 
+        // Prepare next panel
         next.SetActive(true);
         nextCg.alpha = 0f;
         float t = 0f;

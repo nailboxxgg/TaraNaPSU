@@ -1,102 +1,108 @@
-using System;
-using System.Collections;
-using Unity.Collections;
 using UnityEngine;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
+using UnityEngine.UI;
 using ZXing;
+using System.Collections;
+using TMPro;
 
 public class ZXingScannerController : MonoBehaviour
 {
-    [Header("AR Configuration")]
-    [SerializeField]
-    private ARCameraManager arCameraManager;
+    [Header("UI References")]
+    public RawImage cameraFeedDisplay;
+    public AspectRatioFitter aspectFitter;
+    public TMP_Text statusText; // New: To show directions to user
 
-    [Header("Scanner Settings")]
-    public float scanInterval = 0.5f;
-
-    private IBarcodeReader reader;
+    private WebCamTexture webCamTexture;
     private bool isScanning = false;
-    private float nextScanTime = 0;
+    private IBarcodeReader barcodeReader;
 
-    public event Action<string> OnQRFound;
-
-    private void Awake()
+    void Start()
     {
-        reader = new BarcodeReader 
-        { 
-            AutoRotate = true, 
-            Options = new ZXing.Common.DecodingOptions { TryHarder = true } 
-        };
-    }
-
-    private void Update()
-    {
-        if (!isScanning) return;
-        if (Time.time < nextScanTime) return;
-
-        if (arCameraManager == null)
-            arCameraManager = FindObjectOfType<ARCameraManager>();
-
-        if (arCameraManager != null)
-        {
-            ScanFrame();
-            nextScanTime = Time.time + scanInterval;
-        }
+        barcodeReader = new BarcodeReader();
     }
 
     public void StartScanner()
     {
+        if (isScanning) return;
+
+        // Initialize camera
+        WebCamDevice[] devices = WebCamTexture.devices;
+        if (devices.Length == 0)
+        {
+            Debug.LogError("No camera detected");
+            return;
+        }
+
+        webCamTexture = new WebCamTexture(devices[0].name, 1080, 1920);
+        cameraFeedDisplay.texture = webCamTexture;
+        webCamTexture.Play();
+
         isScanning = true;
-        Debug.Log("AR QR Scanner started.");
+        if (statusText != null) statusText.text = "Align the camera to the QR Code";
+        StartCoroutine(ScanRoutine());
     }
 
     public void StopScanner()
     {
         isScanning = false;
-        Debug.Log("AR QR Scanner stopped.");
+        if (webCamTexture != null)
+        {
+            webCamTexture.Stop();
+        }
     }
 
-    private void ScanFrame()
+    private IEnumerator ScanRoutine()
     {
-        if (!arCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
+        while (isScanning)
         {
-            return;
-        }
-
-        var conversionParams = new XRCpuImage.ConversionParams
-        {
-            inputRect = new RectInt(0, 0, image.width, image.height),
-            outputDimensions = new Vector2Int(image.width, image.height),
-            outputFormat = TextureFormat.R8,
-            transformation = XRCpuImage.Transformation.None
-        };
-
-        int size = image.GetConvertedDataSize(conversionParams);
-        var buffer = new NativeArray<byte>(size, Allocator.Temp);
-
-        try
-        {
-            image.Convert(conversionParams, buffer);
-            
-            byte[] pixelData = buffer.ToArray();
-
-            var result = reader.Decode(pixelData, image.width, image.height, RGBLuminanceSource.BitmapFormat.Gray8);
-
-            if (result != null)
+            try
             {
-                Debug.Log($"QR Found: {result.Text}");
-                OnQRFound?.Invoke(result.Text);
+                var result = barcodeReader.Decode(webCamTexture.GetPixels32(), webCamTexture.width, webCamTexture.height);
+                if (result != null)
+                {
+                    OnCodeScanned(result.Text);
+                }
             }
+            catch
+            {
+                // Decoding failed, continue
+            }
+            yield return new WaitForSeconds(0.5f); // Scan every half second
         }
-        catch (Exception ex)
+    }
+
+    private void OnCodeScanned(string result)
+    {
+        Debug.Log("QR Scanned: " + result);
+        
+        if (statusText != null) statusText.text = "Scanned!";
+
+        if (AppFlowController2D.Instance != null)
         {
-            Debug.LogWarning($"QR Scan Error: {ex.Message}");
+            AppFlowController2D.Instance.OnQRCodeScanned(result);
         }
-        finally
+        StopScanner();
+        
+        // Notify UI to close scanner
+        if (QRUIController.Instance != null)
         {
-            buffer.Dispose();
-            image.Dispose();
+            QRUIController.Instance.CloseScanner();
         }
+    }
+
+    void Update()
+    {
+        if (webCamTexture != null && webCamTexture.isPlaying)
+        {
+            float ratio = (float)webCamTexture.width / (float)webCamTexture.height;
+            aspectFitter.aspectRatio = ratio;
+
+            int orient = -webCamTexture.videoRotationAngle;
+            cameraFeedDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, orient);
+        }
+    }
+
+    void OnDisable()
+    {
+        StopScanner();
     }
 }
