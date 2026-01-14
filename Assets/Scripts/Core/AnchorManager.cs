@@ -80,7 +80,7 @@ public class AnchorManager : MonoBehaviour
     {
         stairPairs.Clear();
 
-        // Group anchors by building and floor
+        // Group anchors by building
         var stairs = Anchors.Where(a => a.Type == "stair").ToList();
 
         foreach (var stairGroup in stairs.GroupBy(a => a.BuildingId))
@@ -89,9 +89,11 @@ public class AnchorManager : MonoBehaviour
             for (int i = 0; i < buildingStairs.Count; i++)
             {
                 var stairA = buildingStairs[i];
+                // Look for a stair in the same building, on the next floor, at the same horizontal position
                 var stairB = buildingStairs.FirstOrDefault(s =>
                     s.Floor == stairA.Floor + 1 &&
-                    s.AnchorId.StartsWith(stairA.AnchorId.Replace("-Down", "").Replace("-Up", ""))
+                    Vector2.Distance(new Vector2(s.Position.x, s.Position.z), 
+                                     new Vector2(stairA.Position.x, stairA.Position.z)) < 1.0f
                 );
 
                 if (stairB != null)
@@ -106,7 +108,7 @@ public class AnchorManager : MonoBehaviour
             }
         }
 
-        Debug.Log($"[AnchorManager] Linked {stairPairs.Count} stair pairs.");
+        Debug.Log($"[AnchorManager] Linked {stairPairs.Count} stair pairs using coordinate proximity.");
     }
 
     // --------------------------------------------------------------------
@@ -114,22 +116,27 @@ public class AnchorManager : MonoBehaviour
     // --------------------------------------------------------------------
 
     /// <summary>
-    /// Returns the nearest stair pair connecting two floors in a specific building.
+    /// Returns the nearest stair pair where one end is on the target JSON floor.
     /// </summary>
-    public StairPair FindNearestStair(string buildingId, int fromFloor, int toFloor, Vector3 currentPos)
+    public StairPair FindNearestStairAtFloor(string buildingId, int jsonFloor, Vector3 currentPos)
     {
-        var candidates = stairPairs.Where(s =>
-            s.BuildingId == buildingId &&
-            ((s.Bottom.Floor == fromFloor && s.Top.Floor == toFloor) ||
-             (s.Top.Floor == fromFloor && s.Bottom.Floor == toFloor))
-        );
+        var candidates = stairPairs.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(buildingId) && !buildingId.Equals("Campus", StringComparison.OrdinalIgnoreCase))
+        {
+            candidates = candidates.Where(s => s.BuildingId.Equals(buildingId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Find pairs where either the bottom or top is on our current floor
+        var filtered = candidates.Where(s => s.Bottom.Floor == jsonFloor || s.Top.Floor == jsonFloor).ToList();
 
         StairPair nearest = null;
         float bestDist = float.MaxValue;
 
-        foreach (var stair in candidates)
+        foreach (var stair in filtered)
         {
-            float dist = Vector3.Distance(currentPos, stair.Bottom.PositionVector);
+            Vector3 entrance = (stair.Bottom.Floor == jsonFloor) ? stair.Bottom.PositionVector : stair.Top.PositionVector;
+            float dist = Vector3.Distance(currentPos, entrance);
             if (dist < bestDist)
             {
                 bestDist = dist;

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "909084252938",
+    "project_id": "taranapsu-f7991",
+    "storage_bucket": "taranapsu-f7991.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:909084252938:android:c4130524bd801e1601f8f3",
+        "android_client_info": {
+          "package_name": "com.pangsu.taranapsu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdshsdRUDjvlyRs6fFOJ4L9u_AElo7Bu0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

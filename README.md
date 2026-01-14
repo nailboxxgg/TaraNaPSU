@@ -1,4 +1,4 @@
-# TaraNaPSU - AR Indoor Navigation System
+# TaraNaPSU - 2D Indoor Navigation System
 
 ![Project Banner](https://placeholder-image-url.com) *<!-- Replace with actual banner if available -->*
 
@@ -11,32 +11,35 @@
 
 ## 📖 Project Overview
 
-**TaraNaPSU** is an Augmented Reality (AR) Indoor Navigation application designed to help students, faculty, and visitors navigate the Pangasinan State University Alaminos City Campus. 
+**TaraNaPSU** is a 2D Top-Down Indoor Navigation application designed to help students, faculty, and visitors navigate the Pangasinan State University Alaminos City Campus. 
 
-Using Unity's AR Foundation and NavMesh features, the application provides real-time, visual pathfinding to classrooms, offices, and facilities across multiple buildings and floors. It addresses the challenge of navigating complex campus layouts by overlaying digital directional arrows onto the real-world camera view.
+Unlike traditional AR apps, TaraNaPSU provides a clean, 2D orthographic map view that allows users to plan their routes across multiple buildings and floors with ease. Using Unity's NavMesh features, the application provides real-time pathfinding to classrooms, offices, and facilities, addressing the challenge of navigating complex campus layouts through a familiar digital map interface.
 
 ## ✨ Key Features
 
-*   **AR Pathfinding:** Visualizes the shortest path to a destination using AR arrows and lines.
-*   **Multi-Floor Navigation:** Seamlessly guides users between floors, automatically routing to nearest stairways.
-*   **Building-to-Building Navigation:** Supports outdoor navigation between campus buildings (e.g., Main Gate -> Building 1).
-*   **QR Code Re-localization:** Uses QR codes placed at key locations (entrances, stair landings) to instantly correct the user's position and current floor.
-*   **Searchable Directory:** A comprehensive list of offices, faculty rooms, and labs that users can search and select as destinations.
-*   **Smart Floor Switching:** Automatically detects floor changes and updates the navigation mesh accordingly.
+*   **2D Map Pathfinding:** Visualizes the shortest path to a destination using a top-down digital map.
+*   **Multi-Floor Interactivity:** Seamlessly switch between floors (Ground Floor, 1st Floor, etc.) using an intuitive UI selector.
+*   **Multi-Building Navigation:** Navigate between campus buildings (e.g., Building 1 and Building 2) with accurate spatial representation.
+*   **Flexible Localization:** 
+    *   **Dropdown Selection:** Quickly set your starting point from a list of major entrances.
+    *   **QR Code Re-localization:** Scan QR codes at checkpoints to instantly update your position on the map.
+*   **Smart Searchable Directory:** A comprehensive, type-ahead search for offices, faculty rooms, and labs.
+*   **Automated Routing:** Automatically calculates paths through stairways and corridors using an optimized Navigation Mesh.
 
 ## 🛠️ Tech Stack
 
 *   **Engine:** Unity 2022.3 (or relevant version)
 *   **Language:** C#
-*   **AR Framework:** AR Foundation (ARCore/ARKit)
-*   **Navigation:** Unity NavMesh Surface
+*   **Camera:** Orthographic 2D Projection
+*   **Navigation:** Unity NavMesh Surface (AI Navigation)
+*   **UI System:** Unity UI (UGUI) with TextMeshPro
 *   **Data Storage:** JSON (in `Assets/Resources`)
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 *   **Unity Hub** and **Unity Editor** installed.
-*   **Android Device** with ARCore support (for testing).
+*   **Android Device** (for testing the mobile experience).
 *   USB Cable for debugging/deploying.
 
 ### Installation
@@ -54,23 +57,23 @@ Using Unity's AR Foundation and NavMesh features, the application provides real-
 
 ## 📱 How to Use
 
-1.  **Launch the App:** Give camera permissions when prompted.
-2.  **Scan an Anchor:** Point the camera at a known QR code/marker (e.g., Main Gate or Building Entrance) to localize your position.
+1.  **Launch the App:** You will see the Welcome Panel.
+2.  **Select/Scan Your Location:**
+    *   Choose your current entrance from the **Start Point Dropdown**.
+    *   OR tap the **QR/Camera icon** to scan a nearby location anchor.
 3.  **Select Destination:**
     *   Tap the **Search Bar**.
-    *   Type the name of the office or room (e.g., "Quality Assurance Office").
-    *   Select the target from the list.
-4.  **Follow the Arrows:** Follow the floating AR arrows to your destination.
-5.  **Changing Floors:**
-    *   If your destination is on another floor, the app will guide you to a stairway.
-    *   Once you climb the stairs, scan the QR code on the new floor to update your location.
+    *   Start typing the name of the office or room (e.g., "Quality Assurance Office").
+    *   Select the target from the suggestions.
+4.  **Follow the Map:** The map will automatically calculate and draw a path from your location to the target.
+5.  **Changing Floors:** Use the **Floor Selector** buttons on the side to view different levels of the campus.
 
 ## 📂 Configuration & Data
 
 The app navigates based on static data defined in JSON files located in `Assets/Resources`.
 
 ### 1. `AnchorData.json`
-Defines the physical starting points (QR codes) in the real world.
+Defines the physical starting points (QR codes/Entrances) in the real world.
 ```json
 {
   "Type": "Entrance",
@@ -97,12 +100,12 @@ Defines the destination points (Rooms, Offices).
 
 ## 🏗️ Project Structure
 
-*   `Assets/Scripts/Core`:
-    *   `AnchorManager.cs`: Manages positioning relative to QR anchors.
-    *   `TargetManager.cs`: Loads and filters navigation targets.
+*   `Assets/Scripts/Controllers`:
+    *   `Map2DController.cs`: Manages 2D camera movement and floor visibility.
+    *   `AppFlowController2D.cs`: Controls the main application state and navigation logic.
 *   `Assets/Scripts/UI`:
-    *   `NavigationPanelController.cs`: Controls the bottom UI and direction prompts.
-    *   `SearchBarQR.cs`: Handles search input and QR scanning toggle.
+    *   `LocationSearchBar.cs`: Handles searchable destination dropdown.
+    *   `FloorSelectorUI.cs`: Manages floor switching buttons.
 *   `Assets/Resources`: Contains the `.json` data files.
 
 ## 🤝 Contributing

@@ -9,9 +9,10 @@ public class NavigationStatusDisplay2D : MonoBehaviour
     public TMP_Text destinationText;
     public TMP_Text distanceText;
     public TMP_Text floorText;
-    public TMP_Text promptText;
     public GameObject promptPanel;
+    public TMP_Text floorPromptText;
     public GameObject arrivedPanel;
+    public TMP_Text arrivedPromptText;
 
     [Header("References")]
     public Navigation2DController navigationController;
@@ -77,7 +78,7 @@ public class NavigationStatusDisplay2D : MonoBehaviour
 
     void UpdatePrompt(int currentMapFloor)
     {
-        if (AppFlowController2D.Instance == null || promptPanel == null || promptText == null) return;
+        if (AppFlowController2D.Instance == null || promptPanel == null || floorPromptText == null) return;
 
         if (!navigationController.IsNavigating)
         {
@@ -91,7 +92,7 @@ public class NavigationStatusDisplay2D : MonoBehaviour
         {
             promptPanel.SetActive(true);
             string floorName = targetFloor == 0 ? "Campus Grounds" : (targetFloor == 1 ? "Ground Floor" : "1st Floor");
-            promptText.text = $"Proceed to the stairs. Destination is on the <color=yellow>{floorName}</color>.";
+            floorPromptText.text = $"Your Destination is on the <color=yellow>{floorName}</color>";
         }
         else
         {
@@ -99,7 +100,7 @@ public class NavigationStatusDisplay2D : MonoBehaviour
             if (navigationController.GetPathLength() > 5f)
             {
                 promptPanel.SetActive(true);
-                promptText.text = "Follow the path to your destination.";
+                floorPromptText.text = "Follow the path to your destination.";
             }
             else
             {
@@ -112,6 +113,9 @@ public class NavigationStatusDisplay2D : MonoBehaviour
     {
         if (arrivedPanel != null)
             arrivedPanel.SetActive(true);
+
+        if (arrivedPromptText != null)
+            arrivedPromptText.text = $"Destination: <color=yellow>{navigationController.TargetName}</color>";
 
         if (statusText != null)
             statusText.text = "You have arrived!";

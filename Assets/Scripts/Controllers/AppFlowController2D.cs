@@ -2,7 +2,15 @@ using UnityEngine;
 
 public class AppFlowController2D : MonoBehaviour
 {
-    public static AppFlowController2D Instance;
+    private static AppFlowController2D _instance;
+    public static AppFlowController2D Instance
+    {
+        get
+        {
+            if (_instance == null) _instance = FindObjectOfType<AppFlowController2D>();
+            return _instance;
+        }
+    }
 
     [Header("Panels")]
     public GameObject WelcomePanel;
@@ -22,10 +30,73 @@ public class AppFlowController2D : MonoBehaviour
     private int targetFloor;
     private int startFloor;
 
+    // --- Chained Navigation Support ---
+    private Vector3 checkpointPosition;
+    private bool isNavigatingToCheckpoint = false;
+    private AnchorManager.AnchorData currentStairTarget;
+
     void Awake()
     {
-        Instance = this;
+        _instance = this;
         ShowWelcome();
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            HandleBackAction();
+        }
+
+        // Check for checkpoint arrival
+        if (isNavigatingToCheckpoint && playerGuide != null)
+        {
+            float dist = Vector3.Distance(playerGuide.transform.position, checkpointPosition);
+            if (dist < 1.0f) // Within 1 meter of stairs
+            {
+                OnCheckpointReached();
+            }
+        }
+    }
+
+    private void OnCheckpointReached()
+    {
+        isNavigatingToCheckpoint = false;
+        
+        if (playerGuide != null)
+            playerGuide.StopAutoWalk();
+
+        if (mapController != null)
+            mapController.SetFollowTarget(null);
+
+        Debug.Log($"[AppFlow2D] Checkpoint reached: {currentStairTarget?.AnchorId}. Ready for floor change.");
+        // UI prompts are handled by NavigationStatusDisplay2D monitoring the state
+    }
+
+    private void HandleBackAction()
+    {
+        // If MapPanel is active, it means we are either searching or navigating.
+        // Return to WelcomePanel and stop any active navigation.
+        if (MapPanel.activeSelf)
+        {
+            Debug.Log("[AppFlow2D] Back pressed: Returning to Welcome Panel.");
+            StopNavigation();
+        }
+        else if (WelcomePanel.activeSelf)
+        {
+            // If we are already on the WelcomePanel, exit the app.
+            Debug.Log("[AppFlow2D] Back pressed: Exiting application.");
+            Application.Quit();
+        }
+    }
+
+    /// <summary>
+    /// Standard floor mapping: Campus is 0, Buildings map JSON 0->System 1, JSON 1->System 2.
+    /// </summary>
+    public int MapFloor(string buildingId, int jsonFloor)
+    {
+        if (buildingId?.ToLower() == "campus") return 0;
+        return jsonFloor + 1;
     }
 
     public void ShowWelcome()
@@ -38,14 +109,26 @@ public class AppFlowController2D : MonoBehaviour
     {
         WelcomePanel.SetActive(false);
         MapPanel.SetActive(true);
+
+        // --- TESTING PHASE: Dynamic Discovery ---
+        // Prioritize existing static instances (singletons) to avoid duplicate/destroyed object issues.
+        if (mapController == null)
+            mapController = Map2DController.Instance;
+        
+        if (navigationController == null)
+            navigationController = Navigation2DController.Instance;
+
+        // Fallback: If still null, try finding specifically in the MapPanel hierarchy
+        if (mapController == null) mapController = MapPanel.GetComponentInChildren<Map2DController>(true);
+        if (navigationController == null) navigationController = MapPanel.GetComponentInChildren<Navigation2DController>(true);
     }
 
     public void OnStartPointSelected(string anchorId, Vector3 position, int floor)
     {
+        Debug.Log($"[AppFlow2D] >>> DATA RECEIVED: Start Point = {anchorId} (Floor {floor})");
         selectedStartPoint = anchorId;
         startPosition = position;
         startFloor = floor;
-        Debug.Log($"[AppFlow2D] Start point selected: {anchorId} on floor {floor}");
 
         if (mapController != null)
             mapController.SetUserPosition(position);
@@ -58,10 +141,10 @@ public class AppFlowController2D : MonoBehaviour
 
     public void OnDestinationSelected(string targetName, Vector3 position, int floor)
     {
+        Debug.Log($"[AppFlow2D] >>> DATA RECEIVED: Destination = {targetName} (Floor {floor})");
         selectedDestination = targetName;
         destinationPosition = position;
         targetFloor = floor;
-        Debug.Log($"[AppFlow2D] Destination selected: {targetName} on floor {floor}");
 
         if (mapController != null)
             mapController.SetDestination(position, targetName);
@@ -75,23 +158,72 @@ public class AppFlowController2D : MonoBehaviour
 
         if (navigationController != null)
         {
-            navigationController.BeginNavigation(startPosition, destinationPosition, selectedDestination);
+            Vector3 navTarget = destinationPosition;
+            string navName = selectedDestination;
+
+            // --- Multi-Floor Reroute Logic ---
+            if (startFloor != targetFloor && AnchorManager.Instance != null)
+            {
+                Debug.Log($"[AppFlow2D] Multi-floor detected: {startFloor} -> {targetFloor}. Finding nearest stairway.");
+                
+                // Convert System Floor back to raw JSON Floor for AnchorManager lookup
+                // System 0 -> JSON 0 (Campus)
+                // System 1 -> JSON 0 (Ground)
+                // System 2 -> JSON 1 (1st Floor)
+                int jsonFloor = (startFloor == 0) ? 0 : startFloor - 1;
+                string searchBuilding = (startFloor == 0) ? "Campus" : "B1"; 
+                
+                var stairPair = AnchorManager.Instance.FindNearestStairAtFloor(searchBuilding, jsonFloor, startPosition);
+                if (stairPair != null && stairPair.IsValid)
+                {
+                    // Select the end of the stair that matches our current JSON floor
+                    currentStairTarget = (stairPair.Bottom.Floor == jsonFloor) ? stairPair.Bottom : stairPair.Top;
+                    checkpointPosition = currentStairTarget.PositionVector;
+                    isNavigatingToCheckpoint = true;
+                    
+                    navTarget = checkpointPosition;
+                    navName = $"Stairway to Floor {targetFloor}";
+                    Debug.Log($"[AppFlow2D] Rerouting to checkpoint: {navName} ({currentStairTarget.AnchorId}) at {navTarget}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[AppFlow2D] No stair path found for JSON floor {jsonFloor} in building {searchBuilding}!");
+                }
+            }
+            else
+            {
+                isNavigatingToCheckpoint = false;
+            }
+
+            Debug.Log($"[AppFlow2D] Beginning navigation flow from {startPosition} to {navTarget}");
+            navigationController.BeginNavigation(startPosition, navTarget, navName);
             
             // Start the player guide "simulation" walk
             if (playerGuide != null)
             {
                 playerGuide.StartAutoWalk(navigationController.GetPathCorners());
+
+                // Enable Camera Follow during simulation
+                if (mapController != null)
+                    mapController.SetFollowTarget(playerGuide.transform);
             }
         }
+        else
+        {
+            Debug.LogError("[AppFlow2D] NavigationController is MISSING! Navigation cannot start.");
+        }
 
-        Debug.Log($"[AppFlow2D] Navigation started: {selectedStartPoint} → {selectedDestination}");
+        Debug.Log($"[AppFlow2D] Navigation started log: {selectedStartPoint} → {selectedDestination}");
     }
 
     public void SmartStart()
     {
+        Debug.Log($"[AppFlow2D] SmartStart clicked. Start: {selectedStartPoint}, Dest: {selectedDestination}");
+
         if (string.IsNullOrEmpty(selectedDestination))
         {
             Debug.LogWarning("[AppFlow2D] Cannot start: No destination selected.");
+            // You might want to trigger a UI popup here for the user
             return;
         }
 
@@ -100,9 +232,12 @@ public class AppFlowController2D : MonoBehaviour
             Debug.Log("[AppFlow2D] No start point selected. Opening scanner for localization.");
             if (QRUIController.Instance != null)
                 QRUIController.Instance.OpenScanner();
+            else
+                Debug.LogError("[AppFlow2D] Localization failed: Start point is empty and QR scanner is unavailable.");
         }
         else
         {
+            Debug.Log($"[AppFlow2D] Flow confirmed: {selectedStartPoint} -> {selectedDestination}. Starting...");
             StartNavigation();
         }
     }
@@ -142,7 +277,7 @@ public class AppFlowController2D : MonoBehaviour
 
         // Update Position
         startPosition = anchor.PositionVector;
-        startFloor = anchor.Floor;
+        startFloor = MapFloor(anchor.BuildingId, anchor.Floor);
 
         if (mapController != null) {
             mapController.SetUserPosition(startPosition);
@@ -154,10 +289,32 @@ public class AppFlowController2D : MonoBehaviour
         }
 
         // If already navigating, recalculate path from new position
-        if (navigationController != null && navigationController.IsNavigating) {
-            navigationController.BeginNavigation(startPosition, destinationPosition, selectedDestination);
-            if (playerGuide != null) {
+        if (navigationController != null && navigationController.IsNavigating)
+        {
+            Vector3 finalTarget = destinationPosition;
+            string finalName = selectedDestination;
+
+            // If we were headed to a checkpoint and we've reached the target floor,
+            // we can now resume to the actual destination.
+            if (isNavigatingToCheckpoint && startFloor == targetFloor)
+            {
+                Debug.Log("[AppFlow2D] Checkpoint reached & floor matched. Resuming to final destination.");
+                isNavigatingToCheckpoint = false;
+            }
+            else if (isNavigatingToCheckpoint)
+            {
+                // Still need to go to checkpoint or we are on an intermediate floor?
+                // For now, assume first scannable on target floor = resume.
+                finalTarget = checkpointPosition;
+                finalName = $"Stairway to Floor {targetFloor}";
+            }
+
+            navigationController.BeginNavigation(startPosition, finalTarget, finalName);
+            if (playerGuide != null)
+            {
                 playerGuide.StartAutoWalk(navigationController.GetPathCorners());
+                if (mapController != null)
+                    mapController.SetFollowTarget(playerGuide.transform);
             }
         }
     }
@@ -168,7 +325,10 @@ public class AppFlowController2D : MonoBehaviour
             navigationController.StopNavigation();
 
         if (mapController != null)
+        {
             mapController.ClearMarkers();
+            mapController.SetFollowTarget(null); // Stop following
+        }
 
         if (playerGuide != null)
             playerGuide.StopAutoWalk();

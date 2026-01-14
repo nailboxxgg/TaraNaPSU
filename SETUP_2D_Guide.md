@@ -116,18 +116,28 @@ Create Canvas with these panels:
 
 ### Map Panel (Action Steps)
 1. **Create Panel**: Right-click Canvas -> `UI -> Panel`. Name it **"MapPanel"**.
+   - **Styling**: (Optional) Use the "Overflow Hack" (Section 10) to round only the top corners.
 2. **Setup Floor Selector**:
-   - Create 3 UI Buttons: "Campus", "Ground", "1st Floor".
-   - Add `FloorSelectorUI` script and drag the buttons into the array.
+   - Create a **Vertical Layout Group** container on the right side.
+   - Inside it, create 3 Buttons: "Campus", "Ground", "1st Floor".
+   - Add `FloorSelectorUI` script to the container.
+   - **Assign**: Drag the 3 Buttons into the `floorButtons` array in the Inspector.
 3. **Setup Zoom Controls**: 
-   - Create two UI Buttons (+ and -).
-   - Add `ZoomControlsUI` script and link it to the **GameManager**.
-4. **Setup Status Display**:
-   - Create TMP_Text children for Status, Destination, Distance, and Floor.
-   - Add `NavigationStatusDisplay2D` script and assign references.
-5. **Add Utility Buttons**: 
-   - **"StopButton"**: Set OnClick to call `AppFlowController2D.StopNavigation`.
-   - **"ReCenterButton"**: Set OnClick to call `QRUIController.OpenScanner`. (This allows users to update their position with a QR code during navigation).
+   - Create two UI Buttons (+ and -). Position them in the bottom-right.
+   - Add `ZoomControlsUI` script to them. 
+   - **Link**: Drag the **GameManager** into the `mapController` slot.
+4. **Setup Status Display (Bottom Sheet)**:
+   - Create a Panel at the bottom named **"StatusDisplay"**.
+   - Inside, add 4 `UI -> Text - MeshPro` objects: **Status**, **Destination**, **Distance**, **Floor**.
+   - Create two sub-panels: **"PromptPanel"** and **"ArrivedPanel"** (both initially hidden).
+     - Inside **PromptPanel**, add a text object: **FloorPromptText**.
+     - Inside **ArrivedPanel**, add a text object: **ArrivedPromptText**.
+   - Add `NavigationStatusDisplay2D` script to "StatusDisplay".
+   - **Assign References**: Drag all Text objects (including the 2 inside the sub-panels) into their respective slots.
+5. **Add Navigation Buttons**: 
+   - Inside the StatusDisplay panel, add two Buttons:
+   - **Stop Button**: Set OnClick to call `AppFlowController2D.StopNavigation`.
+   - **Re-center Button**: Set OnClick to call `QRUIController.OpenScanner`. (Use a QR/Camera icon for this).
 
 ## 6. Create Prefabs
 
@@ -198,3 +208,45 @@ To ensure your UI looks perfect on a **1920x1080** (or 1080x1920) screen without
 1. Add an **Aspect Ratio Fitter** component to the Background.
 2. Set **Aspect Mode** to `Envelope Parent`.
 3. Set **Aspect Ratio** to `1.0` (as the generated images are square).
+
+## 11. In-Depth: Welcome Panel UI Components
+
+Follow these precise technical steps to build the selection UI from scratch:
+
+### A. Start Point Dropdown (Entrance Selection)
+1. **The Object**: Right-click WelcomePanel -> `UI -> Dropdown - TextMeshPro`.
+2. **The Logic**: The `StartPointSelector` script automatically scans your `AnchorData.json` for all entries tagged as `type: "Entrance"`.
+3. **Setup Steps**:
+   - Attach the **StartPointSelector** script.
+   - Drag the **AppFlowController2D** (GameManager) into the `appFlow` slot.
+   - Drag the dropdown's own **TMP_Dropdown** into the `dropdown` slot.
+4. **Immediate Action**: This dropdown registers the user's choice the moment they click an item (no "Confirm" button required).
+
+### B. Destination Search Bar (The Hybrid Component)
+This component combines a **TMP Input Field** for typing and a **Scroll View** that acts as a dropdown.
+
+1. **Hierarchy Organization**:
+   - Create an empty GameObject named **"SearchBar_Group"**.
+   - Add **UI -> Input Field - TextMeshPro** as a child. (Name it: *DestinationInput*).
+   - Add **UI -> Button** as a child. Position it on the right edge of the Input Field. (Name it: *ToggleArrow*).
+2. **The Suggestion Body**:
+   - Create **UI -> Scroll View** inside the group. Position it just below the Input Field.
+   - On the **Content** object of the Scroll View, add:
+     - **Vertical Layout Group**: Spacing 5, Padding 10.
+     - **Content Size Fitter**: Vertical Fit = `Preferred`.
+   - **Deactivate** the entire Scroll View by default.
+3. **Logic Wiring**:
+   - Attach `LocationSearchBar` to **"SearchBar_Group"**.
+   - **Assignments**:
+     - `InputField`: Drag the *DestinationInput* child.
+     - `Suggestion Transform`: Drag the **Content** object of the Scroll View.
+     - `Suggestion Prefab`: Drag your **Suggestion Item Prefab** (see below).
+     - `Dropdown icon`: Drag the *ToggleArrow* button.
+     - `App Flow`: Drag the **GameManager**.
+
+### C. Creating the Suggestion Prefab
+1. Create a `UI -> Button - TextMeshPro` in a temporary spot in the Hierarchy.
+2. Style it (rounded corners, white background, font color: Deep Blue).
+3. Set text alignment to Left.
+4. Drag it into your **Prefabs** folder and delete it from the Hierarchy.
+5. Link this prefab to the `LocationSearchBar` script's **Suggestion Prefab** slot.

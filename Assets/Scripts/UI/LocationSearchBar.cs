@@ -7,7 +7,8 @@ public class LocationSearchBar : MonoBehaviour
 {
     [Header("UI Components")]
     public TMP_InputField inputField;
-    public Transform suggestionContainer;
+    public GameObject suggestionRoot; // The ScrollView or container to toggle
+    public Transform suggestionContainer; // The Content object to parent items to
     public GameObject suggestionItemPrefab;
     public Button clearButton;
     public Button toggleButton; // New: Arrow button to show all items
@@ -21,6 +22,10 @@ public class LocationSearchBar : MonoBehaviour
 
     void Start()
     {
+        // Try to find AppFlow if not assigned
+        if (appFlow == null) appFlow = AppFlowController2D.Instance;
+        if (appFlow == null) appFlow = FindObjectOfType<AppFlowController2D>();
+
         LoadTargets();
 
         if (inputField != null)
@@ -33,10 +38,13 @@ public class LocationSearchBar : MonoBehaviour
             clearButton.onClick.AddListener(ClearSelection);
 
         if (toggleButton != null)
+        {
             toggleButton.onClick.AddListener(() => {
-                if (suggestionContainer.gameObject.activeSelf) HideSuggestions();
+                bool isVisible = suggestionRoot != null && suggestionRoot.activeSelf;
+                if (isVisible) HideSuggestions();
                 else ShowAllSuggestions();
             });
+        }
 
         HideSuggestions();
     }
@@ -84,8 +92,8 @@ public class LocationSearchBar : MonoBehaviour
             CreateSuggestionItem(name);
         }
 
-        if (suggestionContainer != null)
-            suggestionContainer.gameObject.SetActive(true);
+        if (suggestionRoot != null)
+            suggestionRoot.SetActive(true);
     }
 
     void FilterSuggestions(string query)
@@ -102,8 +110,8 @@ public class LocationSearchBar : MonoBehaviour
             }
         }
 
-        if (suggestionContainer != null)
-            suggestionContainer.gameObject.SetActive(activeSuggestions.Count > 0);
+        if (suggestionRoot != null)
+            suggestionRoot.SetActive(activeSuggestions.Count > 0);
     }
 
     void CreateSuggestionItem(string targetName)
@@ -134,12 +142,56 @@ public class LocationSearchBar : MonoBehaviour
 
         HideSuggestions();
 
-        if (TargetManager.Instance != null && 
-            TargetManager.Instance.TryGetTarget(targetName, out TargetData data))
+        HideSuggestions();
+
+        // Strictly use the Instance to ensure we talk to the correct manager
+        var flow = AppFlowController2D.Instance;
+        var tm = TargetManager.Instance;
+
+        if (tm == null)
         {
-            if (appFlow != null)
+            Debug.LogError("[SearchBar] FATAL: TargetManager.Instance is null! Is there a TargetManager in the scene?");
+            return;
+        }
+
+        if (tm.TryGetTarget(targetName, out TargetData data))
+        {
+            if (flow != null)
             {
-                appFlow.OnDestinationSelected(targetName, data.Position.ToVector3(), data.FloorNumber + 1); // +1 because JSON 0 is Ground Floor, and our System 0 is Campus
+                flow.OnDestinationSelected(targetName, data.Position.ToVector3(), data.FloorNumber + 1);
+                Debug.Log($"[SearchBar] Successfully reported to AppFlow: {targetName}");
+            }
+            else
+            {
+                Debug.LogError("[SearchBar] FATAL: Could not find any AppFlowController2D in the scene!");
+            }
+        }
+        else
+        {
+            // FALLBACK: If TryGetTarget fails, it's a name mismatch. Let's try to find it manually.
+            Debug.LogWarning($"[SearchBar] TryGetTarget failed for '{targetName}'. Attempting manual fallback search...");
+            
+            bool foundFallback = false;
+            foreach (var name in tm.GetAllTargetNames())
+            {
+                if (name.Trim().ToLower() == targetName.Trim().ToLower())
+                {
+                    if (tm.TryGetTarget(name, out data))
+                    {
+                        if (flow != null)
+                        {
+                            flow.OnDestinationSelected(name, data.Position.ToVector3(), data.FloorNumber + 1);
+                            Debug.Log($"[SearchBar] Fallback Match Success! Reported: {name}");
+                            foundFallback = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!foundFallback)
+            {
+                Debug.LogError($"[SearchBar] ERROR: Target '{targetName}' not found in TargetManager! (Available: {tm.GetAllTargetNames().Count})");
             }
         }
 
@@ -159,8 +211,8 @@ public class LocationSearchBar : MonoBehaviour
     void HideSuggestions()
     {
         ClearSuggestions();
-        if (suggestionContainer != null)
-            suggestionContainer.gameObject.SetActive(false);
+        if (suggestionRoot != null)
+            suggestionRoot.SetActive(false);
     }
 
     public void ClearSelection()

@@ -5,7 +5,15 @@ using UnityEngine.AI;
 [RequireComponent(typeof(LineRenderer))]
 public class Navigation2DController : MonoBehaviour
 {
-    public static Navigation2DController Instance { get; private set; }
+    private static Navigation2DController _instance;
+    public static Navigation2DController Instance
+    {
+        get
+        {
+            if (_instance == null) _instance = FindObjectOfType<Navigation2DController>(true);
+            return _instance;
+        }
+    }
 
     [Header("Path Visualization")]
     public LineRenderer lineRenderer;
@@ -24,12 +32,12 @@ public class Navigation2DController : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
             return;
         }
-        Instance = this;
+        _instance = this;
 
         if (lineRenderer == null)
             lineRenderer = GetComponent<LineRenderer>();
@@ -39,8 +47,20 @@ public class Navigation2DController : MonoBehaviour
         SetupLineRenderer();
     }
 
+    void OnEnable()
+    {
+        // When the panel is shown, redraw if we were navigating
+        if (isNavigating)
+        {
+            DrawPath();
+        }
+    }
+
     void SetupLineRenderer()
     {
+        if (lineRenderer == null)
+            lineRenderer = GetComponent<LineRenderer>();
+
         if (lineRenderer != null)
         {
             lineRenderer.startWidth = pathWidth;
@@ -72,7 +92,7 @@ public class Navigation2DController : MonoBehaviour
         else
         {
             Debug.LogWarning($"[Nav2D] Could not find path to {destinationName}");
-            lineRenderer.positionCount = 0;
+            if (lineRenderer != null) lineRenderer.positionCount = 0;
         }
     }
 
@@ -90,6 +110,8 @@ public class Navigation2DController : MonoBehaviour
 
     void DrawPath()
     {
+        if (lineRenderer == null) return;
+        
         if (navPath == null || navPath.corners == null || navPath.corners.Length == 0)
         {
             lineRenderer.positionCount = 0;
@@ -110,7 +132,7 @@ public class Navigation2DController : MonoBehaviour
     public void StopNavigation()
     {
         isNavigating = false;
-        lineRenderer.positionCount = 0;
+        if (lineRenderer != null) lineRenderer.positionCount = 0;
         targetName = null;
         Debug.Log("[Nav2D] Navigation stopped");
     }

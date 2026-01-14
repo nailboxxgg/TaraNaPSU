@@ -3,14 +3,22 @@ using UnityEngine.EventSystems;
 
 public class Map2DController : MonoBehaviour
 {
-    public static Map2DController Instance { get; private set; }
+    private static Map2DController _instance;
+    public static Map2DController Instance
+    {
+        get
+        {
+            if (_instance == null) _instance = FindObjectOfType<Map2DController>(true);
+            return _instance;
+        }
+    }
 
     [Header("Camera Settings")]
     public Camera mapCamera;
-    public float minZoom = 20f;
-    public float maxZoom = 100f;
-    public float zoomSpeed = 10f;
-    public float panSpeed = 0.5f;
+    public float minZoom = 10f;
+    public float maxZoom = 50f;
+    public float zoomSpeed = 5f;
+    public float panSpeed = 0.3f;
 
     [Header("Map Bounds")]
     public Vector2 mapMinBounds = new Vector2(-50f, -50f);
@@ -19,6 +27,10 @@ public class Map2DController : MonoBehaviour
     [Header("Floor Management")]
     public GameObject[] floorContainers;
     public int currentFloor = 0;
+
+    [Header("Follow Settings")]
+    public Transform followTarget;
+    public bool isFollowing = false;
 
     [Header("Markers")]
     public GameObject userMarkerPrefab;
@@ -34,15 +46,25 @@ public class Map2DController : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
             return;
         }
-        Instance = this;
+        _instance = this;
 
         if (mapCamera == null)
             mapCamera = Camera.main;
+    }
+
+    void OnEnable()
+    {
+        // When the panel is shown, refresh the view
+        if (userMarker != null && userMarker.activeSelf)
+        {
+            CenterOnPosition(userPosition);
+        }
+        Debug.Log("[Map2D] Panel Enabled: View Refreshed.");
     }
 
     void Start()
@@ -57,12 +79,21 @@ public class Map2DController : MonoBehaviour
         HandleZoomInput();
     }
 
+    void LateUpdate()
+    {
+        if (isFollowing && followTarget != null && !isDragging)
+        {
+            CenterOnPosition(followTarget.position);
+        }
+    }
+
     void SetupOrthographicCamera()
     {
         if (mapCamera != null)
         {
             mapCamera.orthographic = true;
-            mapCamera.orthographicSize = 50f;
+            mapCamera.orthographicSize = 25f; // Default starting zoom
+            mapCamera.transform.position = new Vector3(mapCamera.transform.position.x, 20f, mapCamera.transform.position.z);
             mapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         }
     }
@@ -75,6 +106,7 @@ public class Map2DController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             isDragging = true;
+            isFollowing = false; // Stop following if user starts dragging
             lastMousePosition = Input.mousePosition;
         }
 
@@ -83,7 +115,7 @@ public class Map2DController : MonoBehaviour
             isDragging = false;
         }
 
-        if (isDragging && Input.GetMouseButton(0))
+        if (isDragging && Input.GetMouseButton(0) && mapCamera != null)
         {
             Vector3 delta = Input.mousePosition - lastMousePosition;
             Vector3 move = new Vector3(-delta.x, 0, -delta.y) * panSpeed * mapCamera.orthographicSize / 50f;
@@ -96,13 +128,14 @@ public class Map2DController : MonoBehaviour
             lastMousePosition = Input.mousePosition;
         }
 
-        if (Input.touchCount == 1)
+        if (Input.touchCount == 1 && mapCamera != null)
         {
             Touch touch = Input.GetTouch(0);
             
             if (touch.phase == TouchPhase.Began)
             {
                 isDragging = true;
+                isFollowing = false; // Stop following if user touches
                 lastMousePosition = touch.position;
             }
             else if (touch.phase == TouchPhase.Moved && isDragging)
@@ -127,13 +160,13 @@ public class Map2DController : MonoBehaviour
     void HandleZoomInput()
     {
         float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (scroll != 0)
+        if (scroll != 0 && mapCamera != null)
         {
             mapCamera.orthographicSize -= scroll * zoomSpeed;
             mapCamera.orthographicSize = Mathf.Clamp(mapCamera.orthographicSize, minZoom, maxZoom);
         }
 
-        if (Input.touchCount == 2)
+        if (Input.touchCount == 2 && mapCamera != null)
         {
             Touch touch0 = Input.GetTouch(0);
             Touch touch1 = Input.GetTouch(1);
@@ -223,12 +256,20 @@ public class Map2DController : MonoBehaviour
 
     public void ZoomIn()
     {
-        mapCamera.orthographicSize = Mathf.Max(minZoom, mapCamera.orthographicSize - zoomSpeed);
+        if (mapCamera != null)
+            mapCamera.orthographicSize = Mathf.Max(minZoom, mapCamera.orthographicSize - zoomSpeed);
     }
 
     public void ZoomOut()
     {
-        mapCamera.orthographicSize = Mathf.Min(maxZoom, mapCamera.orthographicSize + zoomSpeed);
+        if (mapCamera != null)
+            mapCamera.orthographicSize = Mathf.Min(maxZoom, mapCamera.orthographicSize + zoomSpeed);
+    }
+
+    public void SetFollowTarget(Transform target)
+    {
+        followTarget = target;
+        isFollowing = (target != null);
     }
 
     public Vector3 GetUserPosition() => userPosition;
